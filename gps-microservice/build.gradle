@@ -12,7 +12,6 @@ plugins {
     id 'io.spring.dependency-management' version '1.0.10.RELEASE'
     id 'java'
     id 'jacoco'
-    id "com.github.spotbugs" version "4.6.0"
 }
 apply plugin: 'io.spring.dependency-management'
 
@@ -25,7 +24,6 @@ repositories {
 
 apply plugin: 'java'
 apply plugin: 'idea'
-apply plugin: 'war'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 apply plugin: "jacoco"
@@ -34,13 +32,13 @@ dependencies {
     compileOnly "org.springframework.boot:spring-boot-configuration-processor"
     compile 'org.springframework.boot:spring-boot-starter-web'
     compile 'org.springframework.boot:spring-boot-starter-actuator'
-    compile(name: 'gpsUtil', ext: 'jar')
+    compile(name:'gpsUtil', ext:'jar')
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '2.1.2.RELEASE'
 
     testCompile 'junit:junit'
     testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: '2.1.6.RELEASE'
     testCompile 'org.assertj:assertj-core:3.17.2'
     testCompile 'org.apache.commons:commons-lang3:3.11'
-
 }
