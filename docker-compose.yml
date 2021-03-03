@@ -1,0 +1,58 @@
+version: '3.7'
+
+services:
+  gps-microservice:
+    image: gps-microservice
+    container_name: gps-microservice
+    build:
+      context: gps-microservice
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    networks:
+      - web-server
+    restart: always
+
+  rewards-microservice:
+    image: rewards-microservice
+    container_name: rewards-microservice
+    build:
+      context: rewards-microservice
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    networks:
+      - web-server
+    restart: always
+
+  tripdeals-microservice:
+    image: tripdeals-microservice
+    container_name: tripdeals-microservice
+    build:
+      context: tripDeals-microservice
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    networks:
+      - web-server
+    restart: always
+
+  tourGuide:
+    image: tourguide
+    container_name: tourguide
+    ports:
+      - "8080:8080"
+    networks:
+      - web-server
+    depends_on:
+      - gps-microservice
+      - rewards-microservice
+      - tripdeals-microservice
+    build:
+      context: tourGuide
+      dockerfile: Dockerfile
+    restart: always
+
+networks:
+  web-server:
+    driver: bridge
