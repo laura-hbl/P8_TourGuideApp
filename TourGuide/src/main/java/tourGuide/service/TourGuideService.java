@@ -31,6 +31,8 @@ public class TourGuideService {
 
 	private Logger logger = LoggerFactory.getLogger(TourGuideService.class);
 
+	private final ExecutorService executorService = Executors.newFixedThreadPool(400);
+
 	private final MicroserviceGpsProxy gpsProxy;
 
 	private final MicroserviceRewardsProxy rewardsProxy;
@@ -121,6 +123,36 @@ public class TourGuideService {
 		return userRewards;
 	}
 
+	public VisitedLocationDTO trackUserLocation(final User user) {
+		VisitedLocationDTO visitedLocation = gpsProxy.getUserLocation(user.getUserId());
+		user.addToVisitedLocations(modelConverter.toVisitedLocation(visitedLocation));
+		rewardsService.calculateRewards(user);
+
+		return visitedLocation;
+	}
+
+	public void trackUserLocationWithThreads(final User user) {
+		executorService.execute(new Runnable() {
+			public void run() {
+				trackUserLocation(user);
+			}
+		});
+	}
+
+	public LocationDTO getUserLocation(final String userName) {
+
+		User user = getUser(userName);
+
+		if (user.getVisitedLocations().size() > 0) {
+			return dtoConverter.toLocationDTO(user.getLastVisitedLocation().getLocation());
+		}
+
+		VisitedLocation userLocation = modelConverter.toVisitedLocation(gpsProxy.getUserLocation(user.getUserId()));
+		user.addToVisitedLocations(userLocation);
+
+		return dtoConverter.toLocationDTO(userLocation.getLocation());
+	}
+
 	private void addShutDownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
@@ -128,4 +160,10 @@ public class TourGuideService {
 			}
 		});
 	}
+
+	public void shutdown() throws InterruptedException {
+		executorService.shutdown();
+		executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+	}
+
 }
