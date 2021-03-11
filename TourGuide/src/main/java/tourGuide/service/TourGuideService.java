@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import tourGuide.dto.*;
 import tourGuide.helper.InternalTestHelper;
-import tourGuide.model.Location;
 import tourGuide.model.Provider;
 import tourGuide.model.VisitedLocation;
 import tourGuide.model.user.User;
@@ -175,6 +174,34 @@ public class TourGuideService {
 		user.setTripDeals(providerList);
 
 		return providers;
+	}
+
+	public RecommendedAttractionDTO getUserRecommendedAttractions(final String userName) {
+
+		User user = getUser(userName);
+		VisitedLocation userLocation = user.getLastVisitedLocation();
+		List<AttractionDTO> attractions = gpsProxy.getAttractions();
+
+		// Calculates the distance between each tourist attraction and the user.
+		Map<AttractionDTO, Double> attractionsMap = new HashMap<>();
+		attractions.stream()
+				.forEach(a -> attractionsMap.put(a, distanceCalculator.getDistanceInMiles(a.getLocation(),
+						userLocation.getLocation())));
+
+		// Sorts distance values to get the closest five tourist attractions to the user and map each attractions
+		// to its distance.
+		Map<AttractionDTO, Double> closestAttractionsMap = attractionsMap.entrySet().stream()
+				.sorted(Map.Entry.comparingByValue())
+				.limit(5)
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+
+		List<NearByAttractionDTO> nearByAttractions = new ArrayList<>();
+		closestAttractionsMap.entrySet().stream()
+				.forEach(a -> nearByAttractions.add(new NearByAttractionDTO(a.getKey().getAttractionName(),
+						a.getKey().getLocation(), userLocation.getLocation(), a.getValue(),
+						rewardsProxy.getRewardPoints(a.getKey().getAttractionId(), user.getUserId()))));
+
+		return new RecommendedAttractionDTO(userLocation.getLocation(), nearByAttractions);
 	}
 
 	private void addShutDownHook() {
