@@ -161,6 +161,12 @@ public class TourGuideService {
 		});
 	}
 
+	public Map<String, LocationDTO> getAllUserRecentLocation() {
+
+		return getAllUsers().stream().collect(Collectors.toMap(u -> u.getUserId().toString(),
+				u -> dtoConverter.toLocationDTO(u.getLastVisitedLocation().getLocation())));
+	}
+
 	public void shutdown() throws InterruptedException {
 		executorService.shutdown();
 		executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
