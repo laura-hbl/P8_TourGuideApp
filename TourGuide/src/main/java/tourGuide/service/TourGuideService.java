@@ -153,18 +153,36 @@ public class TourGuideService {
 		return dtoConverter.toLocationDTO(userLocation.getLocation());
 	}
 
+	public Map<String, LocationDTO> getAllUserRecentLocation() {
+
+		return getAllUsers().stream().collect(Collectors.toMap(u -> u.getUserId().toString(),
+				u -> dtoConverter.toLocationDTO(u.getLastVisitedLocation().getLocation())));
+	}
+
+	public ProviderListDTO getUserTripDeals(final String userName) {
+
+		User user = getUser(userName);
+
+		int cumulativeRewardPoints = user.getUserRewards().stream().mapToInt(r -> r.getRewardPoints()).sum();
+
+		ProviderListDTO providers = tripDealsProxy.getProviders(InternalTestHelper.getTripPricerApiKey(), user.getUserId(),
+				user.getUserPreferences().getNumberOfAdults(), user.getUserPreferences().getNumberOfChildren(),
+				user.getUserPreferences().getTripDuration(), cumulativeRewardPoints);
+
+		List<Provider> providerList = new ArrayList<>();
+
+		providers.getProviders().forEach(provider -> providerList.add(modelConverter.toProvider(provider)));
+		user.setTripDeals(providerList);
+
+		return providers;
+	}
+
 	private void addShutDownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
 				tracker.stopTracking();
 			}
 		});
-	}
-
-	public Map<String, LocationDTO> getAllUserRecentLocation() {
-
-		return getAllUsers().stream().collect(Collectors.toMap(u -> u.getUserId().toString(),
-				u -> dtoConverter.toLocationDTO(u.getLastVisitedLocation().getLocation())));
 	}
 
 	public void shutdown() throws InterruptedException {
