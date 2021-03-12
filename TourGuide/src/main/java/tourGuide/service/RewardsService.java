@@ -25,7 +25,7 @@ public class RewardsService implements IRewardsService {
 
     private Logger logger = LoggerFactory.getLogger(TourGuideService.class);
 
-    private final ExecutorService executorService = Executors.newFixedThreadPool(400);
+    private final ExecutorService executorService = Executors.newFixedThreadPool(500);
 
     private final MicroserviceGpsProxy gpsProxy;
 

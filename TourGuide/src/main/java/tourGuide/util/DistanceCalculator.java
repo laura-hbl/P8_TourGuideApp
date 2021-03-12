@@ -4,8 +4,6 @@ import org.springframework.stereotype.Component;
 import tourGuide.constant.UnitsConversion;
 import tourGuide.model.Location;
 
-import java.util.concurrent.TimeUnit;
-
 @Component
 public class DistanceCalculator {
 

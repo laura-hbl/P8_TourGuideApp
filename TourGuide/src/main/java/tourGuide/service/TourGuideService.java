@@ -26,11 +26,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
-public class TourGuideService {
+public class TourGuideService implements ITourGuideService {
 
 	private Logger logger = LoggerFactory.getLogger(TourGuideService.class);
 
-	private final ExecutorService executorService = Executors.newFixedThreadPool(400);
+	private final ExecutorService executorService = Executors.newFixedThreadPool(850);
 
 	private final MicroserviceGpsProxy gpsProxy;
 
@@ -53,7 +53,7 @@ public class TourGuideService {
 	@Value("${test.mode.enabled}")
 	private boolean isTestMode;
 
-	@Value("${gps.integration.test.enabled}")
+	@Value("${integration.test.enabled}")
 	private boolean isIntegrationTest;
 
 	@Autowired
@@ -125,17 +125,18 @@ public class TourGuideService {
 	public VisitedLocationDTO trackUserLocation(final User user) {
 		VisitedLocationDTO visitedLocation = gpsProxy.getUserLocation(user.getUserId());
 		user.addToVisitedLocations(modelConverter.toVisitedLocation(visitedLocation));
-		rewardsService.calculateRewards(user);
+		rewardsService.calculateRewardsWithThreads(user);
 
 		return visitedLocation;
 	}
 
-	public void trackUserLocationWithThreads(final User user) {
-		executorService.execute(new Runnable() {
-			public void run() {
+	public void trackAllUserLocation(List<User> users)  {
+		for (User user: users) {
+			Runnable runnable = () -> {
 				trackUserLocation(user);
-			}
-		});
+			};
+			executorService.execute(runnable);
+		}
 	}
 
 	public LocationDTO getUserLocation(final String userName) {

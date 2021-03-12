@@ -20,7 +20,7 @@ public interface ITourGuideService {
 
     VisitedLocationDTO trackUserLocation(User user);
 
-    void trackUserLocationWithThreads(final User user);
+    void trackAllUserLocation(final List<User> users);
 
     LocationDTO getUserLocation(final String userName);
 
