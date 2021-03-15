@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import rewards.service.RewardsService;
+import rewards.service.IRewardsService;
 
 import java.util.UUID;
 
@@ -13,10 +13,10 @@ import java.util.UUID;
 @RequestMapping("/rewards")
 public class RewardsController {
 
-    private final RewardsService rewardsService;
+    private final IRewardsService rewardsService;
 
     @Autowired
-    public RewardsController(final RewardsService rewardsService) {
+    public RewardsController(final IRewardsService rewardsService) {
         this.rewardsService = rewardsService;
     }
 
