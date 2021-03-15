@@ -29,7 +29,7 @@ public class GpsService implements IGpsService {
 
         VisitedLocation visitedLocation = gpsUtil.getUserLocation(userId);
 
-        return dtoConverter.visitedLocationDTO(visitedLocation);
+        return dtoConverter.toVisitedLocationDTO(visitedLocation);
     }
 
     public List<AttractionDTO> getAttractions() {

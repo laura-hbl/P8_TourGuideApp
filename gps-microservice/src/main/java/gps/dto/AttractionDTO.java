@@ -1,6 +1,6 @@
 package gps.dto;
 
-import gps.model.Location;
+import gpsUtil.location.Location;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
