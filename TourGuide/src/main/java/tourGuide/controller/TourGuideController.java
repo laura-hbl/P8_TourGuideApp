@@ -9,17 +9,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import tourGuide.dto.ProviderListDTO;
-import tourGuide.service.TourGuideService;
+import tourGuide.dto.RecommendedAttractionDTO;
+import tourGuide.exception.BadRequestException;
+import tourGuide.service.ITourGuideService;
 
 @RestController
 public class TourGuideController {
 
     private Logger logger = LoggerFactory.getLogger(TourGuideController.class);
 
-    private TourGuideService tourGuideService;
+    private ITourGuideService tourGuideService;
 
     @Autowired
-    public TourGuideController(final TourGuideService tourGuideService) {
+    public TourGuideController(final ITourGuideService tourGuideService) {
         this.tourGuideService = tourGuideService;
     }
 
@@ -30,6 +32,10 @@ public class TourGuideController {
 
     @GetMapping("/user/location")
     public String getUserLocation(@RequestParam String userName) {
+
+        if (userName == null || userName.length() == 0) {
+            throw new BadRequestException("username is required");
+        }
 
         return JsonStream.serialize(tourGuideService.getUserLocation(userName));
     }
@@ -42,25 +48,39 @@ public class TourGuideController {
     @GetMapping("/user/nearByAttractions")
     public String getUserRecommendedAttractions(@RequestParam final String userName) {
 
+        if (userName == null || userName.length() == 0) {
+            throw new BadRequestException("username is required");
+        }
+
         return JsonStream.serialize(tourGuideService.getUserRecommendedAttractions(userName));
     }
 
     @GetMapping("/user/tripPricer")
-    public ProviderListDTO getUserTripDeals(@RequestParam final String userName) {
+    public String getUserTripDeals(@RequestParam final String userName) {
 
-        logger.debug("Inside TourGuideController getUserTripDeals method");
+        if (userName == null || userName.length() == 0) {
+            throw new BadRequestException("username is required");
+        }
 
-        return tourGuideService.getUserTripDeals(userName);
+        return JsonStream.serialize(tourGuideService.getUserTripDeals(userName));
     }
 
     @GetMapping("/user/rewards")
     public String getUserRewards(@RequestParam final String userName) {
+
+        if (userName == null || userName.length() == 0) {
+            throw new BadRequestException("username is required");
+        }
 
         return JsonStream.serialize(tourGuideService.getUserRewards(userName));
     }
 
     @GetMapping("/user/preferences")
     public String getUserPreferences(@RequestParam String userName) {
+
+        if (userName == null || userName.length() == 0) {
+            throw new BadRequestException("username is required");
+        }
 
         return JsonStream.serialize(tourGuideService.getUserPreferences(userName));
     }

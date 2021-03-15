@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import tourGuide.dto.*;
+import tourGuide.exception.DataAlreadyRegisteredException;
+import tourGuide.exception.ResourceNotFoundException;
 import tourGuide.helper.InternalTestHelper;
 import tourGuide.model.Provider;
 import tourGuide.model.VisitedLocation;
@@ -30,7 +32,7 @@ public class TourGuideService implements ITourGuideService {
 
 	private Logger logger = LoggerFactory.getLogger(TourGuideService.class);
 
-	private final ExecutorService executorService = Executors.newFixedThreadPool(850);
+	private final ExecutorService executorService = Executors.newFixedThreadPool(300);
 
 	private final MicroserviceGpsProxy gpsProxy;
 
@@ -88,18 +90,36 @@ public class TourGuideService implements ITourGuideService {
 	}
 
 	public void addUser(final User user) {
-		if (!internalTestHelper.getInternalUserMap().containsKey(user.getUserName())) {
-			internalTestHelper.getInternalUserMap().put(user.getUserName(), user);
+
+		Map<String, User> internalUserMap = internalTestHelper.getInternalUserMap();
+
+		if (internalUserMap.containsKey(user.getUserName())) {
+			throw new DataAlreadyRegisteredException("The username provided may be registered already");
 		}
+
+		internalUserMap.put(user.getUserName(), user);
 	}
 
 	public User getUser(final String userName) {
-		return internalTestHelper.getInternalUserMap().get(userName);
+
+		User user = internalTestHelper.getInternalUserMap().get(userName);
+
+		if (user == null) {
+			throw new ResourceNotFoundException("No user registered with this username");
+		}
+
+		return user;
 	}
 
 	public List<User> getAllUsers() {
 
-		return internalTestHelper.getInternalUserMap().values().stream().collect(Collectors.toList());
+		List<User> users = internalTestHelper.getInternalUserMap().values().stream().collect(Collectors.toList());
+
+		if (users.isEmpty()) {
+			throw new ResourceNotFoundException("Failed to get user list");
+		}
+
+		return users;
 	}
 
 	public UserPreferencesDTO getUserPreferences(final String userName) {
@@ -156,7 +176,7 @@ public class TourGuideService implements ITourGuideService {
 	public Map<String, LocationDTO> getAllUserRecentLocation() {
 
 		return getAllUsers().stream().collect(Collectors.toMap(u -> u.getUserId().toString(),
-				u -> dtoConverter.toLocationDTO(u.getLastVisitedLocation().getLocation())));
+				u -> getUserLocation(u.getUserName())));
 	}
 
 	public ProviderListDTO getUserTripDeals(final String userName) {
@@ -217,5 +237,4 @@ public class TourGuideService implements ITourGuideService {
 		executorService.shutdown();
 		executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
 	}
-
 }
