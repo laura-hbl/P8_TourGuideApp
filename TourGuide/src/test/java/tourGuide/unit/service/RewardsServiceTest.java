@@ -24,11 +24,9 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-
 
 @RunWith(MockitoJUnitRunner.class)
 public class RewardsServiceTest {
@@ -59,7 +57,7 @@ public class RewardsServiceTest {
 
         Location attractionLocation = new Location(-117.922008, 33.817595);
         List<AttractionDTO> attractions = Arrays.asList(new AttractionDTO(UUID.randomUUID(), "name",
-                "city", "state",  attractionLocation));
+                "city", "state", attractionLocation));
 
         when(gpsProxy.getAttractions()).thenReturn(attractions);
         when(distanceCalculator.getDistanceInMiles(attractionLocation, location)).thenReturn(100.00);
@@ -77,15 +75,10 @@ public class RewardsServiceTest {
     @DisplayName("If user has any visitedLocation, when CalculateReward, then rewards should be equal to zero")
     public void givenAnUserWithNoVisitedLocation_whenCalculateRewards_thenUserRewardIsEqualToZero() {
         User user = new User();
-        List<AttractionDTO> attractions = Arrays.asList(new AttractionDTO(UUID.randomUUID(), "name",
-                "city", "state",  new Location(-117.922008, 33.817595)));
-
-        when(gpsProxy.getAttractions()).thenReturn(attractions);
 
         rewardsService.calculateRewards(user);
 
         assertThat(user.getUserRewards().size()).isEqualTo(0);
-        verify(gpsProxy).getAttractions();
     }
 
     @Test
@@ -103,7 +96,7 @@ public class RewardsServiceTest {
         Attraction attraction = new Attraction(UUID.randomUUID(), "name", "city", "state",
                 location);
         List<AttractionDTO> attractions = Arrays.asList(new AttractionDTO(UUID.randomUUID(), "name",
-                "city", "state",  location));
+                "city", "state", location));
 
         user.addUserReward(new UserReward(visitedLocation, attraction, 100));
 
@@ -130,9 +123,9 @@ public class RewardsServiceTest {
 
         Location attractionLocation = new Location(-117.922008, 33.817595);
         AttractionDTO attractionDTO = new AttractionDTO(UUID.randomUUID(), "name",
-                "city", "state",  attractionLocation);
+                "city", "state", attractionLocation);
         Attraction attraction = new Attraction(UUID.randomUUID(), "name",
-                "city", "state",  attractionLocation);
+                "city", "state", attractionLocation);
         List<AttractionDTO> attractions = Arrays.asList(attractionDTO);
 
         when(gpsProxy.getAttractions()).thenReturn(attractions);

@@ -1,5 +1,6 @@
 package tourGuide.unit.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -25,6 +26,7 @@ import tourGuide.service.ITourGuideService;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -49,8 +51,12 @@ public class TourGuideControllerTest {
 
     private Location attractionLocation;
 
+    private ObjectMapper objectMapper;
+
     @BeforeEach
     public void setUp() {
+
+        objectMapper = new ObjectMapper();
 
         userLocationDTO = new LocationDTO(-160.326003, -73.869629);
 
@@ -59,6 +65,21 @@ public class TourGuideControllerTest {
         attractionLocation = new Location(-117.922008, 33.817595);
 
         mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
+    }
+
+    @Test
+    @Tag("Index")
+    @DisplayName("When index request, then return OK status")
+    public void WhenIndexRequest_thenReturnOKStatus() throws Exception {
+
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String content = result.getResponse().getContentAsString();
+
+        assertThat(content).contains("Greetings from TourGuide!");
     }
 
     @Test
@@ -82,16 +103,21 @@ public class TourGuideControllerTest {
 
     @Test
     @Tag("GetUserLocation")
-    @DisplayName("Given an empty username, when getUserLocation request, then return bad request status")
+    @DisplayName("Given an empty username, when getUserLocation request, then return BadRequest status")
     public void givenAnEmptyUsername_whenGetUserLocationRequest_thenReturnBadRequestStatus() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/user/location")
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/user/location")
                 .contentType(MediaType.APPLICATION_JSON)
                 .param("userName", ""))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        String content = result.getResponse().getContentAsString();
+
+        assertThat(content).contains("username is required");
     }
 
     @Test
-    @Tag("getUsersRecentLocation()")
+    @Tag("getUsersRecentLocation")
     @DisplayName("When getUsersRecentLocation request, then return OK status")
     public void WhenGetUsersRecentLocationRequest_thenReturnOKStatus() throws Exception {
         Map<String, LocationDTO> usersLocation = new HashMap<>();
@@ -133,22 +159,27 @@ public class TourGuideControllerTest {
 
     @Test
     @Tag("GetUserRecommendedAttractions")
-    @DisplayName("Given an empty username, when getUserRecommendedAttractions request, then return bad request status")
+    @DisplayName("Given an empty username, when getUserRecommendedAttractions request, then return BadRequest status")
     public void givenAnEmptyUsername_whenGetUserRecommendedAttractionsRequest_thenReturnBadRequestStatus() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/user/nearByAttractions")
+
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/user/nearByAttractions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .param("userName", ""))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        String content = result.getResponse().getContentAsString();
+
+        assertThat(content).contains("username is required");
     }
 
     @Test
     @Tag("GetUserTripDeals")
     @DisplayName("Given an username, when getUserTripDeals request, then return OK status")
     public void givenAnUsername_whenGetUserTripDealsRequest_thenReturnOKStatus() throws Exception {
-        ProviderListDTO providerListDTO = new ProviderListDTO();
-        providerListDTO.setProviders(Arrays.asList(new ProviderDTO("providerName", 200, UUID.randomUUID())));
+        List<ProviderDTO> providers = Arrays.asList(new ProviderDTO("providerName", 200, UUID.randomUUID()));
 
-        when(tourGuideService.getUserTripDeals("Laura")).thenReturn(providerListDTO);
+        when(tourGuideService.getUserTripDeals("Laura")).thenReturn(providers);
 
         MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/user/tripPricer")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -165,12 +196,18 @@ public class TourGuideControllerTest {
 
     @Test
     @Tag("GetUserTripDeals")
-    @DisplayName("Given an empty username, when getUserTripDeals request, then return bad request status")
+    @DisplayName("Given an empty username, when getUserTripDeals request, then return BadRequest status")
     public void givenAnEmptyUsername_whenGetUserTripDealsRequest_thenReturnBadRequestStatus() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/user/tripPricer")
+
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/user/tripPricer")
                 .contentType(MediaType.APPLICATION_JSON)
                 .param("userName", ""))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        String content = result.getResponse().getContentAsString();
+
+        assertThat(content).contains("username is required");
     }
 
     @Test
@@ -198,42 +235,64 @@ public class TourGuideControllerTest {
 
     @Test
     @Tag("GetUserRewards")
-    @DisplayName("Given an empty username, when getUserRewards request, then return bad request status")
+    @DisplayName("Given an empty username, when getUserRewards request, then return BadRequest status")
     public void givenAnEmptyUsername_whenGetUserRewardsRequest_thenReturnBadRequestStatus() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/user/rewards")
+
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/user/rewards")
                 .contentType(MediaType.APPLICATION_JSON)
                 .param("userName", ""))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        String content = result.getResponse().getContentAsString();
+
+        assertThat(content).contains("username is required");
     }
 
     @Test
-    @Tag("GetUserPreferences")
-    @DisplayName("Given an username, when getUserPreferences request, then return OK status")
-    public void givenAnUsername_whenGetUserPreferencesRequest_thenReturnOKStatus() throws Exception {
+    @Tag("UpdateUserPreferences")
+    @DisplayName("Given an user preferences to update, when updateUserPreferences request, then return OK status")
+    public void givenAnUserPreferencesToUpdate_whenUpdateUserPreferencesRequest_thenOKStatusShouldBeReturn()
+            throws Exception {
         UserPreferencesDTO userPreferencesDTO = new UserPreferencesDTO(10, 100,
                 300, 3, 2, 1, 1);
 
-        when(tourGuideService.getUserPreferences("Laura")).thenReturn(userPreferencesDTO);
+        when(tourGuideService.updateUserPreferences(anyString(), any(UserPreferencesDTO.class))).thenReturn(userPreferencesDTO);
 
-        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/user/preferences")
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.put("/user/preferences")
                 .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(userPreferencesDTO))
                 .param("userName", "Laura"))
                 .andExpect(status().isOk())
                 .andReturn();
 
         String content = result.getResponse().getContentAsString();
 
-        assertThat(content).contains("300");
-        verify(tourGuideService).getUserPreferences("Laura");
+        assertThat(content).contains("10");
     }
 
     @Test
-    @Tag("GetUserPreferences")
-    @DisplayName("Given an empty username, when getUserPreferences request, then return bad request status")
-    public void givenAnEmptyUsername_whenGetUserPreferencesRequest_thenReturnBadRequestStatus() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/user/preferences")
+    @Tag("UpdateUserPreferences")
+    @DisplayName("Given an empty username, when updateUserPreferences request, then return BadRequest status")
+    public void givenAnEmptyUsername_whenUpdateUserPreferencesRequest_thenBadRequestStatusShouldBeReturn() throws Exception {
+        UserPreferencesDTO userPreferencesDTO = new UserPreferencesDTO(10, 100,
+                300, 3, 2, 1, 1);
+
+        mockMvc.perform(MockMvcRequestBuilders.put("/user/preferences")
                 .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(userPreferencesDTO))
                 .param("userName", ""))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @Tag("UpdateUserPreferences")
+    @DisplayName("Given an empty body request, when updateUserPreferences request, then return BadRequest status")
+    public void givenAnEmptyBodyRequest_whenUpdateUserPreferencesRequest_thenBadRequestStatusShouldBeReturn() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.put("/user/preferences")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(""))
+                .param("userName", "Laura"))
                 .andExpect(status().isBadRequest());
     }
 }

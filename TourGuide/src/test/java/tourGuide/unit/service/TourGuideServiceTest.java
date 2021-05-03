@@ -31,10 +31,8 @@ import tourGuide.util.DistanceCalculator;
 import tourGuide.util.ModelConverter;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.not;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
@@ -45,6 +43,9 @@ public class TourGuideServiceTest {
     private TourGuideService tourGuideService;
 
     @Mock
+    private RewardsService rewardsService;
+
+    @Mock
     private MicroserviceGpsProxy gpsProxy;
 
     @Mock
@@ -52,9 +53,6 @@ public class TourGuideServiceTest {
 
     @Mock
     private MicroserviceRewardsProxy rewardsProxy;
-
-    @Mock
-    private RewardsService rewardsService;
 
     @Mock
     private ModelConverter modelConverter;
@@ -68,33 +66,40 @@ public class TourGuideServiceTest {
     @Mock
     private InternalTestHelper internalTestHelper;
 
-    private User user1;
+    private static UUID user1ID;
 
-    private User user2;
+    private static UUID user2ID;
 
-    private List<User> userList;
+    private static User user1;
 
-    private Map<String, User> internalUser;
+    private static User user2;
 
-    private UserPreferences userPreferences;
+    private static List<User> userList;
 
-    private UserPreferencesDTO userPreferencesDTO;
+    private static Map<String, User> internalUser;
 
-    private VisitedLocation visitedLocation;
+    private static UserPreferences userPreferences;
 
-    private VisitedLocationDTO visitedLocationDTO;
+    private static UserPreferencesDTO userPreferencesDTO;
 
-    private Attraction attraction;
+    private static VisitedLocation visitedLocation;
 
-    private UserRewardDTO userRewardDTO;
+    private static VisitedLocationDTO visitedLocationDTO;
 
-    private UserReward userReward;
+    private static Attraction attraction;
+
+    private static AttractionDTO attractionDTO;
+
+    private static UserRewardDTO userRewardDTO;
+
+    private static UserReward userReward;
 
     @Before
     public void setUp() {
-
-        user1 = new User(UUID.randomUUID(), "Laura", "000", "laura@gmail.com");
-        user2 = new User(UUID.randomUUID(), "Luc", "001", "luc@gmail.com");
+        user1ID = UUID.randomUUID();
+        user2ID = UUID.randomUUID();
+        user1 = new User(user1ID, "Laura", "000", "laura@gmail.com");
+        user2 = new User(user2ID, "Luc", "001", "luc@gmail.com");
 
         userPreferences = new UserPreferences(10,
                 Money.of(100, Monetary.getCurrency("USD")),
@@ -103,12 +108,14 @@ public class TourGuideServiceTest {
         userPreferencesDTO = new UserPreferencesDTO(10, 100,
                 300, 3, 2, 1, 1);
 
-        visitedLocation = new VisitedLocation(user1.getUserId(), new Location(-160.326003,
+        visitedLocation = new VisitedLocation(user1ID, new Location(-160.326003,
                 -73.869629), new Date());
-        visitedLocationDTO = new VisitedLocationDTO(user1.getUserId(), new Location(-160.326003,
+        visitedLocationDTO = new VisitedLocationDTO(user1ID, new Location(-160.326003,
                 -73.869629), new Date());
 
         attraction = new Attraction(UUID.randomUUID(), "Disneyland" , "Anaheim" ,
+                "CA" , new Location(-117.922008, 33.817595));
+        attractionDTO = new AttractionDTO(UUID.randomUUID(), "Disneyland" , "Anaheim" ,
                 "CA" , new Location(-117.922008, 33.817595));
 
         userRewardDTO = new UserRewardDTO(visitedLocation, attraction, 300);
@@ -125,22 +132,21 @@ public class TourGuideServiceTest {
     @Tag("AddUser")
     @DisplayName("Given an user, when addUser, then user should be added correctly")
     public void givenAnUnUser_whenAddUser_thenUserShouldBeAddedCorrectly() {
-        internalUser.clear();
+        User user3 = new User(UUID.randomUUID(), "Pierre", "000", "Pierre@gmail.com");
         when(internalTestHelper.getInternalUserMap()).thenReturn(internalUser);
 
-        tourGuideService.addUser(user2);
+        tourGuideService.addUser(user3);
 
-        assertThat(tourGuideService.getAllUsers()).contains(user2);
+        assertThat(internalUser.containsKey("Pierre"));
     }
 
     @Test(expected = DataAlreadyRegisteredException.class)
     @Tag("AddUser")
     @DisplayName("If the user's username is already used, when AddUser, then throw DataAlreadyRegisteredException")
     public void givenAnUserWithAnAlreadyUsedUsername_whenAddUser_thenDataAlreadyRegisteredExceptionIsThrown() {
-        User user = new User(UUID.randomUUID(), "Laura", "000", "laura@gmail.com");
         when(internalTestHelper.getInternalUserMap()).thenReturn(internalUser);
 
-        tourGuideService.addUser(user);
+        tourGuideService.addUser(user1);
     }
 
     @Test
@@ -151,7 +157,7 @@ public class TourGuideServiceTest {
 
         User userFound = tourGuideService.getUser("Laura");
 
-        assertThat(userFound).isEqualToComparingFieldByField(user1);
+        assertThat(userFound).isEqualTo(user1);
     }
 
     @Test(expected = ResourceNotFoundException.class)
@@ -183,19 +189,6 @@ public class TourGuideServiceTest {
         when(internalTestHelper.getInternalUserMap()).thenReturn(internalUser);
 
         tourGuideService.getAllUsers();
-    }
-
-    @Test
-    @Tag("GetUserPreferences")
-    @DisplayName("Given an username, when getUserPreferences, then result should match expected user preferences")
-    public void givenAnUsername_whenGetUserPreferences_thenReturnExpectedUserPreferences() {
-        user1.setUserPreferences(userPreferences);
-        when(internalTestHelper.getInternalUserMap()).thenReturn(internalUser);
-        when(dtoConverter.toUserPreferencesDTO(user1.getUserPreferences())).thenReturn(userPreferencesDTO);
-
-        UserPreferencesDTO result = tourGuideService.getUserPreferences("Laura");
-
-        assertThat(result).isEqualToComparingFieldByField(userPreferencesDTO);
     }
 
     @Test
@@ -231,15 +224,14 @@ public class TourGuideServiceTest {
 
         VisitedLocationDTO result = tourGuideService.trackUserLocation(user1);
 
-        assertThat(result).isEqualToComparingFieldByField(visitedLocationDTO);
-        assertThat(user1.getVisitedLocations().get(0)).isEqualToComparingFieldByField(visitedLocationDTO);
+        assertThat(result).isEqualTo(visitedLocationDTO);
+        assertThat(user1.getVisitedLocations().get(0)).isEqualTo(visitedLocation);
     }
 
     @Test
     @Tag("GetUserLocation")
     @DisplayName("Given an user with no visited location, when getUserLocation, then return expected user location")
     public void givenAnUserWithNoVisitedLocation_whenGetUserLocation_thenReturnExpectedUserLocation() {
-
         LocationDTO expectedLocation = new LocationDTO(-160.326003, -73.869629);
         when(internalTestHelper.getInternalUserMap()).thenReturn(internalUser);
         when(gpsProxy.getUserLocation(any(UUID.class))).thenReturn(visitedLocationDTO);
@@ -272,7 +264,7 @@ public class TourGuideServiceTest {
     @DisplayName("When getAllUserRecentLocation, then return expected users location")
     public void whenGetAllUserRecentLocation_thenReturnExpectedUsersLocation() {
         user1.addToVisitedLocations(visitedLocation);
-        user2.addToVisitedLocations(new VisitedLocation(user2.getUserId(), new Location(-117.922008,
+        user2.addToVisitedLocations(new VisitedLocation(user2ID, new Location(-117.922008,
                 33.817595), new Date()));
         LocationDTO user1Location = new LocationDTO(-160.326003, -73.869629);
         LocationDTO user2Location = new LocationDTO(-117.922008, 33.817595);
@@ -292,18 +284,18 @@ public class TourGuideServiceTest {
     @DisplayName("Given an username, when getUserTripDeals, then return expected user trip deals")
     public void givenAnUsername_whenGetUserTripDeals_thenReturnExpectedUserTripDeals() {
         user1.addUserReward(userReward);
+        user1.setUserPreferences(userPreferences);
         ProviderDTO providerDTO = new ProviderDTO("name", 100, UUID.randomUUID());
         Provider provider = new Provider("name", 100, UUID.randomUUID());
-        ProviderListDTO providerListDTO = new ProviderListDTO();
-        providerListDTO.setProviders(Arrays.asList(providerDTO));
         when(internalTestHelper.getInternalUserMap()).thenReturn(internalUser);
+        when(internalTestHelper.getTripPricerApiKey()).thenReturn("test-server-api-key");
         when(tripDealsProxy.getProviders(anyString(), any(UUID.class), anyInt(), anyInt(), anyInt(), anyInt()))
-                .thenReturn(providerListDTO);
-        when(modelConverter.toProvider(any(ProviderDTO.class))).thenReturn(provider);
+                .thenReturn(Arrays.asList(providerDTO));
+        when(modelConverter.toProvider(providerDTO)).thenReturn(provider);
 
-        ProviderListDTO providerList = tourGuideService.getUserTripDeals(user1.getUserName());
+        List<ProviderDTO> providerList = tourGuideService.getUserTripDeals(user1.getUserName());
 
-        assertThat(providerList.getProviders()).contains(providerDTO);
+        assertThat(providerList).contains(providerDTO);
         assertThat(user1.getTripDeals()).contains(provider);
     }
 
@@ -311,8 +303,9 @@ public class TourGuideServiceTest {
     @Tag("GetUserRecommendedAttractions")
     @DisplayName("Given an username, when getUserRecommendedAttractions, then return expected users recommended attractions")
     public void givenAnUsername_whenGetUserRecommendedAttractions_thenReturnExpectedRecommendedAttractions() {
-       user1.addToVisitedLocations(visitedLocation);
+        user1.addToVisitedLocations(visitedLocation);
         Location userLocation = user1.getLastVisitedLocation().getLocation();
+        LocationDTO userLocationDTO = new LocationDTO(-160.326003, -73.869629);
         UUID userID = user1.getUserId();
         AttractionDTO attraction1 = new AttractionDTO(UUID.randomUUID(), "Disneyland", "Anaheim", "CA", new Location(33.817595D, -117.922008D));
         AttractionDTO attraction2 = new AttractionDTO(UUID.randomUUID(), "Jackson Hole", "Jackson Hole", "WY", new Location(43.582767D, -110.821999D));
@@ -324,14 +317,16 @@ public class TourGuideServiceTest {
         List<AttractionDTO> attractions = Arrays.asList(attraction1, attraction2, attraction3, attraction4, attraction5, attraction6, attraction7);
 
         when(internalTestHelper.getInternalUserMap()).thenReturn(internalUser);
+        when(dtoConverter.toLocationDTO(any(Location.class))).thenReturn(userLocationDTO);
+        when(modelConverter.toLocation(any(LocationDTO.class))).thenReturn(userLocation);
         when(gpsProxy.getAttractions()).thenReturn(attractions);
-        when(distanceCalculator.getDistanceInMiles(attraction1.getLocation(),userLocation)).thenReturn(100.00);
-        when(distanceCalculator.getDistanceInMiles(attraction2.getLocation(),userLocation)).thenReturn(200.00);
-        when(distanceCalculator.getDistanceInMiles(attraction3.getLocation(),userLocation)).thenReturn(300.00);
-        when(distanceCalculator.getDistanceInMiles(attraction4.getLocation(),userLocation)).thenReturn(400.00);
-        when(distanceCalculator.getDistanceInMiles(attraction5.getLocation(),userLocation)).thenReturn(500.00);
-        when(distanceCalculator.getDistanceInMiles(attraction6.getLocation(),userLocation)).thenReturn(600.00);
-        when(distanceCalculator.getDistanceInMiles(attraction7.getLocation(),userLocation)).thenReturn(700.00);
+        when(distanceCalculator.getDistanceInMiles(attraction1.getLocation(), userLocation)).thenReturn(100.00);
+        when(distanceCalculator.getDistanceInMiles(attraction2.getLocation(), userLocation)).thenReturn(200.00);
+        when(distanceCalculator.getDistanceInMiles(attraction3.getLocation(), userLocation)).thenReturn(300.00);
+        when(distanceCalculator.getDistanceInMiles(attraction4.getLocation(), userLocation)).thenReturn(400.00);
+        when(distanceCalculator.getDistanceInMiles(attraction5.getLocation(), userLocation)).thenReturn(500.00);
+        when(distanceCalculator.getDistanceInMiles(attraction6.getLocation(), userLocation)).thenReturn(600.00);
+        when(distanceCalculator.getDistanceInMiles(attraction7.getLocation(), userLocation)).thenReturn(700.00);
 
         when(rewardsProxy.getRewardPoints(attraction1.getAttractionId(), userID)).thenReturn(100);
         when(rewardsProxy.getRewardPoints(attraction2.getAttractionId(), userID)).thenReturn(500);

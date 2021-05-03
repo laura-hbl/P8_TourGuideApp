@@ -21,12 +21,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@TestPropertySource("/application-test.properties")
-public class TestPerformanceIT {
+@TestPropertySource("/performance-test.properties")
+public class PerformanceIT {
 
     @Autowired
     private MicroserviceGpsProxy gpsProxy;
@@ -48,9 +49,7 @@ public class TestPerformanceIT {
     @Tag("TrackAllUserLocation")
     @DisplayName("Given a high volume users, when trackAllUserLocation, then elapsed time should be less or equal " +
             "than expected time")
-    public void givenAHighVolumeUsers_whenTrackAllUserLocation_thenElapsedTimeShouldBeLessOrEqualThanExpectedTime()
-            throws InterruptedException {
-
+    public void givenAHighVolumeUsers_whenTrackAllUserLocation_thenElapsedTimeShouldBeLessOrEqualThanExpectedTime() {
         List<User> allUsers = tourGuideService.getAllUsers();
         allUsers.forEach(u -> u.clearVisitedLocations());
 
@@ -59,9 +58,8 @@ public class TestPerformanceIT {
 
         System.out.println("Tracking location start at : " + LocalDateTime.now());
 
-         tourGuideService.trackAllUserLocation(allUsers);
+        tourGuideService.trackAllUserLocation(allUsers);
 
-        tourGuideService.shutdown();
         stopWatch.stop();
 
         System.out.println("highVolumeTrackLocation: Time Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()) + " seconds.");
@@ -70,12 +68,10 @@ public class TestPerformanceIT {
     }
 
     @Test
-    @Tag("CalculateRewardsWithThreads")
-    @DisplayName("Given a high volume users that visited an attraction, when calculateRewardsWithThreads, then " +
+    @Tag("CalculateAllRewards")
+    @DisplayName("Given a high volume users that visited an attraction, when calculateAllRewards, then " +
             "elapsed time should be less or equal than expected time")
-    public void givenHighVolumeUsers_whenCalculateRewardsWithThreads_thenElapsedTimeShouldBeLessOrEqualThanExpectedTime()
-            throws InterruptedException {
-
+    public void givenHighVolumeUsers_whenCalculateAllRewards_thenElapsedTimeShouldBeLessOrEqualThanExpectedTime() {
         AttractionDTO attraction = gpsProxy.getAttractions().get(0);
         List<User> allUsers = tourGuideService.getAllUsers();
 
@@ -89,9 +85,8 @@ public class TestPerformanceIT {
         stopWatch.start();
         System.out.println("Tracking rewards start at : " + LocalDateTime.now());
 
-        allUsers.forEach(u -> rewardsService.calculateRewardsWithThreads(u));
+        rewardsService.calculateAllRewards(allUsers);
 
-        rewardsService.shutdown();
         stopWatch.stop();
 
         System.out.println("highVolumeGetRewards: Time Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()) + " seconds.");

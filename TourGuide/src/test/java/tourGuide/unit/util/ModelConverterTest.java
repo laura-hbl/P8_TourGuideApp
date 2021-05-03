@@ -1,19 +1,16 @@
 package tourGuide.unit.util;
 
-import javax.money.Monetary;
-import org.javamoney.moneta.Money;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import tourGuide.dto.AttractionDTO;
+import tourGuide.dto.LocationDTO;
 import tourGuide.dto.ProviderDTO;
-import tourGuide.dto.UserPreferencesDTO;
 import tourGuide.dto.VisitedLocationDTO;
 import tourGuide.model.Attraction;
 import tourGuide.model.Location;
 import tourGuide.model.Provider;
 import tourGuide.model.VisitedLocation;
-import tourGuide.model.user.UserPreferences;
 import tourGuide.util.ModelConverter;
 
 import java.util.Date;
@@ -28,38 +25,14 @@ public class ModelConverterTest {
 
     @Test
     @Tag("Valid")
-    @DisplayName("Given an UserPreferencesDTO, when ToUserPreferences, then result should match expected UserPreferences")
-    public void givenAnUserPreferencesDTO_whenToUserPreferences_thenReturnExpectedUserPreferences() {
-        UserPreferencesDTO userPreferencesDTO = new UserPreferencesDTO(10, 100,
-                300, 3, 2, 1, 1);
-
-        UserPreferences userPreferences = new UserPreferences(10,
-                Money.of(100, Monetary.getCurrency("USD")),
-                Money.of(300, Monetary.getCurrency("USD")), 3,
-                2, 1, 1);
-
-        UserPreferences result = modelConverter.toUserPreferences(userPreferencesDTO);
-
-        assertThat(result).isEqualToComparingFieldByField(userPreferences);
-    }
-
-    @Test
-    @Tag("Exception")
-    @DisplayName("Given a null UserPreferencesDTO, then toUserPreferences should raise an NullPointerException")
-    public void givenANullUserPreferencesDTO_whenToUserPreferences_thenNullPointerExceptionIsThrown() {
-        assertThatNullPointerException().isThrownBy(() -> modelConverter.toUserPreferences(null));
-    }
-
-    @Test
-    @Tag("Valid")
     @DisplayName("Given a VisitedLocationDTO, when ToVisitedLocation, then result should match expected VisitedLocation")
     public void givenAVisitedLocationDTO_whenToVisitedLocation_thenReturnExpectedVisitedLocation() {
         UUID userID = UUID.randomUUID();
-        VisitedLocationDTO visitedLocationDTO = new VisitedLocationDTO(userID, new Location(-160.326003,
-                -73.869629), new Date());
+        Location location = new Location(-160.326003, -73.869629);
+        Date date = new Date();
+        VisitedLocationDTO visitedLocationDTO = new VisitedLocationDTO(userID, location, date);
 
-        VisitedLocation visitedLocation = new VisitedLocation(userID, new Location(-160.326003,
-                -73.869629), new Date());
+        VisitedLocation visitedLocation = new VisitedLocation(userID, location, date);
 
         VisitedLocation result = modelConverter.toVisitedLocation(visitedLocationDTO);
 
@@ -78,12 +51,13 @@ public class ModelConverterTest {
     @DisplayName("Given an AttractionDTO, when ToAttraction, then result should match expected Attraction")
     public void givenAnAttractionDTO_whenToAttraction_thenReturnExpectedAttraction() {
         UUID attractionID = UUID.randomUUID();
+        Location location = new Location(-117.922008, 33.817595);
 
-        AttractionDTO attractionDTO = new AttractionDTO(attractionID, "Disneyland" , "Anaheim" ,
-                "CA" , new Location(-117.922008, 33.817595));
+        AttractionDTO attractionDTO = new AttractionDTO(attractionID, "Disneyland", "Anaheim",
+                "CA", location);
 
-        Attraction attraction = new Attraction(attractionID, "Disneyland" , "Anaheim" ,
-                "CA" , new Location(-117.922008, 33.817595));
+        Attraction attraction = new Attraction(attractionID, "Disneyland", "Anaheim",
+                "CA", location);
 
         Attraction result = modelConverter.toAttraction(attractionDTO);
 
@@ -114,5 +88,23 @@ public class ModelConverterTest {
     @DisplayName("Given a null ProviderDTO, then toProvider should raise an NullPointerException")
     public void givenANullProviderDTO_whenToProvider_thenNullPointerExceptionIsThrown() {
         assertThatNullPointerException().isThrownBy(() -> modelConverter.toProvider(null));
+    }
+
+    @Test
+    @Tag("Valid")
+    @DisplayName("Given a Location, when ToLocation, then result should match expected Location")
+    public void givenALocation_whenToLocationDTO_thenReturnExpectedLocationDTO() {
+        Location location = new Location(-117.922008, 33.817595);
+
+        Location result = modelConverter.toLocation(new LocationDTO(-117.922008, 33.817595));
+
+        assertThat(result).isEqualToComparingFieldByField(location);
+    }
+
+    @Test
+    @Tag("Exception")
+    @DisplayName("Given a null LocationDTO, then toLocation should raise an NullPointerException")
+    public void givenANullLocationDTO_whenToLocation_thenNullPointerExceptionIsThrown() {
+        assertThatNullPointerException().isThrownBy(() -> modelConverter.toLocation(null));
     }
 }

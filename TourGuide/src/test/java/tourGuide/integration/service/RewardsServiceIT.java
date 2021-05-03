@@ -14,24 +14,27 @@ import tourGuide.model.VisitedLocation;
 import tourGuide.model.user.User;
 import tourGuide.model.user.UserReward;
 import tourGuide.proxies.MicroserviceGpsProxy;
-import tourGuide.proxies.MicroserviceRewardsProxy;
 import tourGuide.service.RewardsService;
-import tourGuide.util.DistanceCalculator;
+import tourGuide.service.TourGuideService;
 import tourGuide.util.ModelConverter;
 
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
-@TestPropertySource("/application-test.properties")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@TestPropertySource("/integration-test.properties")
 public class RewardsServiceIT {
 
     @Autowired
     private RewardsService rewardsService;
+
+    @Autowired
+    private TourGuideService tourGuideService;
 
     @Autowired
     private MicroserviceGpsProxy gpsProxy;
@@ -44,8 +47,8 @@ public class RewardsServiceIT {
     @DisplayName("If user has visited one attraction, when calculateReward, then rewards should be equal to one")
     public void givenAnUserWithOneVisitedAttraction_whenCalculateRewards_thenUserRewardIsEqualToOne() {
         User user = new User(UUID.randomUUID(), "laura", "000", "laura@gmail.com");
-        AttractionDTO attraction = gpsProxy.getAttractions().get(0);
-        user.addToVisitedLocations(new VisitedLocation(user.getUserId(), attraction.getLocation(), new Date()));
+        AttractionDTO attraction1 = gpsProxy.getAttractions().get(0);
+        user.addToVisitedLocations(new VisitedLocation(user.getUserId(), attraction1.getLocation(), new Date()));
 
         rewardsService.calculateRewards(user);
 
@@ -58,6 +61,8 @@ public class RewardsServiceIT {
     public void givenAnUserWithNoAttractionVisited_whenCalculateRewards_thenUserRewardIsEqualToZero() {
         User user = new User(UUID.randomUUID(), "laura", "000", "laura@gmail.com");
 
+        assertThat(user.getUserRewards().size()).isEqualTo(0);
+
         rewardsService.calculateRewards(user);
 
         assertThat(user.getUserRewards().size()).isEqualTo(0);
@@ -69,10 +74,14 @@ public class RewardsServiceIT {
             "equal to one")
     public void givenAnUserThatHasVisitedTwiceTheSameAttraction_whenCalculateRewards_thenUserRewardIsEqualToOne() {
         User user = new User(UUID.randomUUID(), "laura", "000", "laura@gmail.com");
-        AttractionDTO attraction = gpsProxy.getAttractions().get(0);
-        VisitedLocation visitedLocation = new VisitedLocation(user.getUserId(), attraction.getLocation(), new Date());
-        user.addUserReward(new UserReward(visitedLocation, modelConverter.toAttraction(attraction), 100));
-        user.addToVisitedLocations(new VisitedLocation(user.getUserId(), attraction.getLocation(), new Date()));
+        AttractionDTO attraction1 = gpsProxy.getAttractions().get(0);
+        VisitedLocation visitedLocation1 = new VisitedLocation(user.getUserId(), attraction1.getLocation(), new Date());
+        VisitedLocation visitedLocation2 = new VisitedLocation(user.getUserId(), attraction1.getLocation(), new Date());
+        user.addToVisitedLocations(visitedLocation1);
+        user.addToVisitedLocations(visitedLocation2);
+        user.addUserReward(new UserReward(visitedLocation1, modelConverter.toAttraction(attraction1), 100));
+
+        assertThat(user.getUserRewards().size()).isEqualTo(1);
 
         rewardsService.calculateRewards(user);
 
@@ -90,25 +99,29 @@ public class RewardsServiceIT {
                 -73.869629), new Date());
         user.addToVisitedLocations(visitedLocation);
 
+        assertThat(user.getUserRewards().size()).isEqualTo(0);
+
         rewardsService.calculateRewards(user);
 
         assertThat(user.getUserRewards().size()).isEqualTo(0);
     }
 
     @Test
-    @Tag("CalculateRewardsWithThreads")
-    @DisplayName("If user has visited one attraction, when calculateRewardsWithThreads, then rewards should be equal " +
-            "to one")
-    public void givenAnUserWithOneVisitedAttraction_whenCalculateRewardsWithThreads_thenUserRewardIsEqualToOne()
-            throws InterruptedException {
-        User user = new User(UUID.randomUUID(), "laura", "000", "laura@gmail.com");
+    @Tag("CalculateRewards")
+    @DisplayName("If user has no visited location near an attraction, when calculateReward, then rewards should " +
+            "be equal to zero")
+    public void given_whenCalculateRewards_thenUserRewardIsEqualToZero() {
         AttractionDTO attraction = gpsProxy.getAttractions().get(0);
-        VisitedLocation visitedLocation = new VisitedLocation(user.getUserId(), attraction.getLocation(), new Date());
-        user.addToVisitedLocations(visitedLocation);
+        List<User> allUsers = tourGuideService.getAllUsers();
 
-        rewardsService.calculateRewards(user);
-        TimeUnit.SECONDS.sleep(1);
+        allUsers.forEach(u -> {
+            u.clearVisitedLocations();
+            u.getUserRewards().clear();
+            u.addToVisitedLocations(new VisitedLocation(u.getUserId(), attraction.getLocation(), new Date()));
+        });
 
-        assertThat(user.getUserRewards().size()).isEqualTo(1);
+        rewardsService.calculateAllRewards(allUsers);
+
+        allUsers.forEach(u -> assertTrue(u.getUserRewards().size() == 1));
     }
 }
