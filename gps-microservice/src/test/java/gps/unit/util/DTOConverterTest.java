@@ -2,10 +2,10 @@ package gps.unit.util;
 
 import gps.dto.AttractionDTO;
 import gps.dto.VisitedLocationDTO;
-import gpsUtil.location.Location;
-import gpsUtil.location.VisitedLocation;
 import gps.util.DTOConverter;
 import gpsUtil.location.Attraction;
+import gpsUtil.location.Location;
+import gpsUtil.location.VisitedLocation;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -32,8 +32,8 @@ public class DTOConverterTest {
         VisitedLocationDTO result = dtoConverter.toVisitedLocationDTO(visitedLocation);
 
         assertThat(result.getUserId()).isEqualTo(userID);
-        assertThat(result.getLocation().latitude).isEqualTo(-160.326003);
-        assertThat(result.getLocation().longitude).isEqualTo(-73.869629);
+        assertThat(result.getLocation().getLatitude()).isEqualTo(-160.326003);
+        assertThat(result.getLocation().getLongitude()).isEqualTo(-73.869629);
         assertThat(result.getTimeVisited()).isEqualTo(date);
     }
 
@@ -57,8 +57,8 @@ public class DTOConverterTest {
         assertThat(result.getAttractionName()).isEqualTo("name");
         assertThat(result.getCity()).isEqualTo("Disneyland");
         assertThat(result.getState()).isEqualTo("Anaheim");
-        assertThat(result.getLocation().latitude).isEqualTo(-117.922008);
-        assertThat(result.getLocation().longitude).isEqualTo(33.817595);
+        assertThat(result.getLocation().getLatitude()).isEqualTo(-117.922008);
+        assertThat(result.getLocation().getLongitude()).isEqualTo(33.817595);
     }
 
     @Test
@@ -67,5 +67,4 @@ public class DTOConverterTest {
     public void givenANullAttraction_whenToAttractionDTO_thenNullPointerExceptionIsThrown() {
         assertThatNullPointerException().isThrownBy(() -> dtoConverter.toAttractionDTO(null));
     }
-
 }
