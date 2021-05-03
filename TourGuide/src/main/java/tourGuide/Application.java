@@ -4,14 +4,21 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
-import java.util.Locale;
-
+/**
+ * Launch TourGuide Application.
+ *
+ * @author Laura Habdul
+ */
 @SpringBootApplication
 @EnableFeignClients("tourGuide")
 public class Application {
 
+    /**
+     * Starts TourGuide application.
+     *
+     * @param args no argument
+     */
     public static void main(final String[] args) {
-        Locale.setDefault(Locale.US);
         SpringApplication.run(Application.class, args);
     }
 }

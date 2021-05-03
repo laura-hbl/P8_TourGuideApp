@@ -1,42 +1,57 @@
 package tourGuide.dto;
 
-import javax.money.CurrencyUnit;
-import javax.money.Monetary;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import javax.validation.constraints.Min;
+import lombok.*;
+import org.springframework.format.annotation.NumberFormat;
 
-@Data
-@NoArgsConstructor
+/**
+ * Permits the storage and retrieving data of an user preferences.
+ *
+ * @author Laura Habdul
+ */
+@NoArgsConstructor(access = AccessLevel.PUBLIC)
+@AllArgsConstructor(access = AccessLevel.PUBLIC)
+@Getter(AccessLevel.PUBLIC)
+@Setter(AccessLevel.PUBLIC)
 public class UserPreferencesDTO {
 
-    private String userName;
+    /**
+     * The radius of the area where attractions is considered as nearby one by the user.
+     */
+    @NumberFormat
+    private int attractionProximity;
 
-    private int attractionProximity = Integer.MAX_VALUE;
+    /**
+     * The user's preference on the lowest price limit.
+     */
+    @Min(value = 0, message = "Please enter a valid number")
+    private int lowerPricePoint;
 
-    private CurrencyUnit currency = Monetary.getCurrency("USD");
+    /**
+     * The user's preference on the highest price limit.
+     */
+    private int highPricePoint;
 
-    private int lowerPricePoint = 0;
+    /**
+     * The user's travel preference for length of stay.
+     */
+    @Min(value = 1, message = "the length of stay must be at least 1")
+    private int tripDuration;
 
-    private int highPricePoint = Integer.MAX_VALUE;
+    /**
+     * The user's travel preference for ticket quantity.
+     */
+    @Min(value = 1, message = "the number of tickets must be at least 1")
+    private int ticketQuantity;
 
-    private int tripDuration = 1;
-
-    private int ticketQuantity = 1;
-
-    private int numberOfAdults = 1;
-
-    private int numberOfChildren = 0;
-
-    public UserPreferencesDTO(final int attractionProximity, final int lowerPricePoint, final int highPricePoint,
-                              final int tripDuration, final int ticketQuantity, final int numberOfAdults,
-                              final int numberOfChildren) {
-        this.attractionProximity = attractionProximity;
-        this.lowerPricePoint = lowerPricePoint;
-        this.highPricePoint = highPricePoint;
-        this.tripDuration = tripDuration;
-        this.ticketQuantity = ticketQuantity;
-        this.numberOfAdults = numberOfAdults;
-        this.numberOfChildren = numberOfChildren;
-    }
+    /**
+     * The user's travel preference for the number of adults.
+     */
+    @Min(value = 1, message = "the number of adult must be at least 1")
+    private int numberOfAdults;
+    /**
+     * The user's travel preference for the number of children.
+     */
+    @Min(value = 0, message = "Please enter a valid number")
+    private int numberOfChildren;
 }

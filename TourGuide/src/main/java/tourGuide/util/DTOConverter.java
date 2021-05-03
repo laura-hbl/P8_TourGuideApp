@@ -8,9 +8,20 @@ import tourGuide.model.Location;
 import tourGuide.model.user.UserPreferences;
 import tourGuide.model.user.UserReward;
 
+/**
+ * Allows the conversion of Model class to DTO class.
+ *
+ * @author Laura Habdul
+ */
 @Component
 public class DTOConverter {
 
+    /**
+     * Converts UserPreferences to UserPreferencesDTO.
+     *
+     * @param preferences User trip deals preferences
+     * @return The UserPreferencesDTO object
+     */
     public UserPreferencesDTO toUserPreferencesDTO(final UserPreferences preferences) {
 
         return new UserPreferencesDTO(preferences.getAttractionProximity(), preferences.getLowerPricePoint()
@@ -19,12 +30,24 @@ public class DTOConverter {
                 preferences.getNumberOfChildren());
     }
 
-    public UserRewardDTO toUserRewardDTO(UserReward userReward) {
+    /**
+     * Converts UserReward to UserRewardDTO.
+     *
+     * @param userReward UserReward object to convert
+     * @return The UserRewardDTO object
+     */
+    public UserRewardDTO toUserRewardDTO(final UserReward userReward) {
 
         return new UserRewardDTO(userReward.visitedLocation, userReward.attraction, userReward.getRewardPoints());
     }
 
-    public LocationDTO toLocationDTO(Location location) {
+    /**
+     * Converts Location to LocationDTO.
+     *
+     * @param location Location object to convert
+     * @return The LocationDTO object
+     */
+    public LocationDTO toLocationDTO(final Location location) {
 
         return new LocationDTO(location.getLatitude(), location.getLongitude());
     }

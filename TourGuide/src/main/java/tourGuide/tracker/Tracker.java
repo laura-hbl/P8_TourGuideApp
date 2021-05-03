@@ -1,9 +1,10 @@
 package tourGuide.tracker;
 
 import org.apache.commons.lang3.time.StopWatch;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import tourGuide.model.user.User;
+import tourGuide.service.ITourGuideService;
 import tourGuide.service.TourGuideService;
 
 import java.util.List;
@@ -11,35 +12,70 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Launch the tracking of all users location2.
+ *
+ * @author Laura Habdul
+ */
 public class Tracker extends Thread {
 
-    private Logger logger = LoggerFactory.getLogger(Tracker.class);
+    /**
+     * Tracker logger.
+     */
+    private static final Logger LOGGER = LogManager.getLogger(Tracker.class);
 
+    /**
+     * Time interval between each users tracking.
+     */
     private static final long trackingPollingInterval = TimeUnit.MINUTES.toSeconds(5);
 
+    /**
+     * Creates an Executor that uses a single worker thread.
+     */
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-    private final TourGuideService tourGuideService;
+    /**
+     * ITourGuideService's implement class reference.
+     */
+    private final ITourGuideService tourGuideService;
 
+    /**
+     * Indicates if the tracker is stopped (true) or running (true).
+     */
     private boolean stop = false;
 
+    /**
+     * Constructor of class Tracker.
+     * Initialize tourGuideService.
+     *
+     * @param tourGuideService ITourGuideService's implement class reference
+     */
     public Tracker(final TourGuideService tourGuideService) {
         this.tourGuideService = tourGuideService;
     }
 
+    /**
+     * Assures to start the Tracker thread.
+     */
     public void startTracking() {
         stop = false;
         executorService.submit(this);
     }
 
     /**
-     * Assures to shut down the Tracker thread
+     * Assures to shut down the Tracker thread.
      */
     public void stopTracking() {
         stop = true;
         executorService.shutdownNow();
     }
 
+    /**
+     * Overrides the run method once Tracker class is launched.
+     * Retrieves all user by calling TourGuideService's getAllUsers method, starts a StopWatch, then tracks all
+     * user location by calling TourGuideService's trackAllUserLocation method.
+     * Resets the StopWatch then wait 5 minutes before updating the users' location.
+     */
     @Override
     public void run() {
         StopWatch stopWatch = new StopWatch();
@@ -47,26 +83,26 @@ public class Tracker extends Thread {
         while (true) {
 
             if (Thread.currentThread().isInterrupted() || stop) {
-                logger.debug("Tracker stopping");
+                LOGGER.debug("Tracker stopping");
                 break;
             }
 
             List<User> users = tourGuideService.getAllUsers();
-            logger.debug("Begin Tracker. Tracking " + users.size() + " users.");
+            LOGGER.debug("Begin Tracker. Tracking " + users.size() + " users.");
             stopWatch.start();
 
             tourGuideService.trackAllUserLocation(users);
 
             stopWatch.stop();
-            logger.debug("Tracker Time Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()) + " seconds.");
+            LOGGER.debug("Finished tracking users, tracker Time Elapsed: "
+                    + TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()) + " seconds.");
             stopWatch.reset();
             try {
-                logger.debug("Tracker sleeping");
+                LOGGER.debug("Tracker sleeping");
                 TimeUnit.SECONDS.sleep(trackingPollingInterval);
             } catch (InterruptedException e) {
                 break;
             }
         }
-
     }
 }

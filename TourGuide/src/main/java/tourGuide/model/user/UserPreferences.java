@@ -3,95 +3,83 @@ package tourGuide.model.user;
 import javax.money.CurrencyUnit;
 import javax.money.Monetary;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.javamoney.moneta.Money;
 
-
+/**
+ * Permits the storage and retrieving data of an user preferences.
+ *
+ * @author Laura Habdul
+ */
+@Getter
+@Setter
+@NoArgsConstructor
 public class UserPreferences {
-	
-	private int attractionProximity = Integer.MAX_VALUE;
 
-	private CurrencyUnit currency = Monetary.getCurrency("USD");
+    /**
+     * The radius of the area where attractions is considered as nearby one by the user.
+     */
+    private int attractionProximity = Integer.MAX_VALUE;
 
-	private Money lowerPricePoint = Money.of(0, currency);
+    /**
+     * Defines US Dollar as used currency of the application.
+     */
+    private CurrencyUnit currency = Monetary.getCurrency("USD");
 
-	private Money highPricePoint = Money.of(Integer.MAX_VALUE, currency);
+    /**
+     * The user's preference on the lowest price limit.
+     */
+    private Money lowerPricePoint = Money.of(0, currency);
 
-	private int tripDuration = 1;
+    /**
+     * The user's preference on the highest price limit.
+     */
+    private Money highPricePoint = Money.of(Integer.MAX_VALUE, currency);
 
-	private int ticketQuantity = 1;
+    /**
+     * The user's travel preference for length of stay.
+     */
+    private int tripDuration = 1;
 
-	private int numberOfAdults = 1;
+    /**
+     * The user's travel preference for ticket quantity.
+     */
+    private int ticketQuantity = 1;
 
-	private int numberOfChildren = 0;
-	
-	public UserPreferences() {
-	}
+    /**
+     * The user's travel preference for the number of adults.
+     */
+    private int numberOfAdults = 1;
 
-	public UserPreferences(final int attractionProximity, final Money lowerPricePoint, final Money highPricePoint,
-						   final int tripDuration, final int ticketQuantity, final int numberOfAdults,
-						   final int numberOfChildren) {
-		this.attractionProximity = attractionProximity;
-		this.lowerPricePoint = lowerPricePoint;
-		this.highPricePoint = highPricePoint;
-		this.tripDuration = tripDuration;
-		this.ticketQuantity = ticketQuantity;
-		this.numberOfAdults = numberOfAdults;
-		this.numberOfChildren = numberOfChildren;
-	}
+    /**
+     * The user's travel preference for the number of children.
+     */
+    private int numberOfChildren = 0;
 
-	public void setAttractionProximity(final int attractionProximity) {
-		this.attractionProximity = attractionProximity;
-	}
-	
-	public int getAttractionProximity() {
-		return attractionProximity;
-	}
-	
-	public Money getLowerPricePoint() {
-		return lowerPricePoint;
-	}
-
-	public void setLowerPricePoint(final Money lowerPricePoint) {
-		this.lowerPricePoint = lowerPricePoint;
-	}
-
-	public Money getHighPricePoint() {
-		return highPricePoint;
-	}
-
-	public void setHighPricePoint(final Money highPricePoint) {
-		this.highPricePoint = highPricePoint;
-	}
-	
-	public int getTripDuration() {
-		return tripDuration;
-	}
-
-	public void setTripDuration(final int tripDuration) {
-		this.tripDuration = tripDuration;
-	}
-
-	public int getTicketQuantity() {
-		return ticketQuantity;
-	}
-
-	public void setTicketQuantity(final int ticketQuantity) {
-		this.ticketQuantity = ticketQuantity;
-	}
-	
-	public int getNumberOfAdults() {
-		return numberOfAdults;
-	}
-
-	public void setNumberOfAdults(final int numberOfAdults) {
-		this.numberOfAdults = numberOfAdults;
-	}
-
-	public int getNumberOfChildren() {
-		return numberOfChildren;
-	}
-
-	public void setNumberOfChildren(final int numberOfChildren) {
-		this.numberOfChildren = numberOfChildren;
-	}
+    /**
+     * Constructor of class UserPreferences.
+     * Initialize attractionProximity, lowerPricePoint, tripDuration,  ticketQuantity, numberOfAdults
+     * and numberOfChildren.
+     *
+     * @param attractionProximity The radius of the area where attractions is considered as nearby one by the user
+     * @param lowerPricePoint     The user's preference on the lowest price limit
+     * @param highPricePoint      The user's preference on the highest price limit
+     * @param tripDuration        The user's travel preference for length of stay
+     * @param ticketQuantity      The user's travel preference for ticket quantity
+     * @param numberOfAdults      The user's travel preference for the number of adults
+     * @param numberOfChildren    The user's travel preference for the number of children
+     */
+    public UserPreferences(final int attractionProximity, final Money lowerPricePoint, final Money highPricePoint,
+                           final int tripDuration, final int ticketQuantity, final int numberOfAdults,
+                           final int numberOfChildren) {
+        this.attractionProximity = attractionProximity;
+        this.lowerPricePoint = lowerPricePoint;
+        this.highPricePoint = highPricePoint;
+        this.tripDuration = tripDuration;
+        this.ticketQuantity = ticketQuantity;
+        this.numberOfAdults = numberOfAdults;
+        this.numberOfChildren = numberOfChildren;
+    }
 }
