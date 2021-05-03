@@ -1,4 +1,4 @@
-FROM openjdk:11
+FROM openjdk:8-jdk-alpine
 ADD build/libs/rewards-microservice.jar rewards-microservice.jar
 EXPOSE 8082
 ENTRYPOINT ["java","-jar","rewards-microservice.jar"]
