@@ -5,11 +5,20 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.util.Locale;
 
+/**
+ * Launch Gps Application.
+ *
+ * @author Laura Habdul
+ */
 @SpringBootApplication
 public class GpsApplication {
 
+    /**
+     * Starts Gps application.
+     *
+     * @param args no argument
+     */
     public static void main(final String[] args) {
-        Locale.setDefault(Locale.US);
         SpringApplication.run(GpsApplication.class, args);
     }
 }
