@@ -1,87 +1,167 @@
 package tourGuide.controller;
 
 import com.jsoniter.output.JsonStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javax.validation.Valid;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import tourGuide.dto.ProviderListDTO;
-import tourGuide.dto.RecommendedAttractionDTO;
+import org.springframework.web.bind.annotation.*;
+import tourGuide.dto.*;
 import tourGuide.exception.BadRequestException;
 import tourGuide.service.ITourGuideService;
 
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Creates REST endpoints for operations on user data.
+ *
+ * @author Laura Habdul
+ * @see ITourGuideService
+ */
 @RestController
 public class TourGuideController {
 
-    private Logger logger = LoggerFactory.getLogger(TourGuideController.class);
+    /**
+     * TourGuideController logger.
+     */
+    private static final Logger LOGGER = LogManager.getLogger(TourGuideController.class);
 
+    /**
+     * ITourGuideService's implement class reference.
+     */
     private ITourGuideService tourGuideService;
 
+    /**
+     * Constructor of class TourGuideController.
+     * Initialize tourGuideService.
+     *
+     * @param tourGuideService ITourGuideService's implement class reference.
+     */
     @Autowired
     public TourGuideController(final ITourGuideService tourGuideService) {
         this.tourGuideService = tourGuideService;
     }
 
+    /**
+     * Displays TourGuide home page.
+     *
+     * @return The greeting message
+     */
     @RequestMapping("/")
     public String index() {
         return "Greetings from TourGuide!";
     }
 
+    /**
+     * Retrieves the location of an user.
+     *
+     * @param userName username of the user to be located
+     * @return The user location converted to a LocationDTO object
+     */
     @GetMapping("/user/location")
-    public String getUserLocation(@RequestParam String userName) {
+    public LocationDTO getUserLocation(@RequestParam String userName) {
+        LOGGER.debug("User location request with username : {}", userName);
 
-        if (userName == null || userName.length() == 0) {
+        if (userName.length() == 0) {
             throw new BadRequestException("username is required");
         }
+        LocationDTO userLocation = tourGuideService.getUserLocation(userName);
 
-        return JsonStream.serialize(tourGuideService.getUserLocation(userName));
+        LOGGER.info("User location request - SUCCESS");
+        return userLocation;
     }
+
+    /**
+     * Retrieves recent location of all users.
+     *
+     * @return All user recent location map to their id
+     */
     @GetMapping("/users/locations")
-    public String getUsersRecentLocation() {
+    public Map<String, LocationDTO> getUsersRecentLocation() {
+        LOGGER.debug("Users recent location request");
 
-        return JsonStream.serialize(tourGuideService.getAllUserRecentLocation());
+        Map<String, LocationDTO> usersRecentLocation = tourGuideService.getAllUserRecentLocation();
+
+        LOGGER.info("Users recent location request - SUCCESS");
+        return usersRecentLocation;
     }
 
+    /**
+     * Retrieves the five attractions closest to the user.
+     *
+     * @param userName username of the user
+     * @return A RecommendedAttractionDTO object that contains the five attractions closest to the user and the
+     * user location
+     */
     @GetMapping("/user/nearByAttractions")
-    public String getUserRecommendedAttractions(@RequestParam final String userName) {
+    public RecommendedAttractionDTO getUserRecommendedAttractions(@RequestParam final String userName) {
+        LOGGER.debug("User recommended attractions request with username : {}", userName);
 
-        if (userName == null || userName.length() == 0) {
+        if (userName.length() == 0) {
             throw new BadRequestException("username is required");
         }
+        RecommendedAttractionDTO nearByAttractions = tourGuideService.getUserRecommendedAttractions(userName);
 
-        return JsonStream.serialize(tourGuideService.getUserRecommendedAttractions(userName));
+        LOGGER.info("User recommended attractions request - SUCCESS");
+        return nearByAttractions;
     }
 
+    /**
+     * Retrieves the user trip deals.
+     *
+     * @param userName username of the user
+     * @return The provider list
+     */
     @GetMapping("/user/tripPricer")
-    public String getUserTripDeals(@RequestParam final String userName) {
+    public List<ProviderDTO> getUserTripDeals(@RequestParam final String userName) {
+        LOGGER.debug("User trip deals request with username : {}", userName);
 
-        if (userName == null || userName.length() == 0) {
+        if (userName.length() == 0) {
             throw new BadRequestException("username is required");
         }
+        List<ProviderDTO> userTripDeals = tourGuideService.getUserTripDeals(userName);
 
-        return JsonStream.serialize(tourGuideService.getUserTripDeals(userName));
+        LOGGER.info("User trip deals request - SUCCESS");
+        return userTripDeals;
     }
 
+    /**
+     * Retrieves the user rewards.
+     *
+     * @param userName username of the user
+     * @return The list of the user rewards
+     */
     @GetMapping("/user/rewards")
-    public String getUserRewards(@RequestParam final String userName) {
+    public List<UserRewardDTO> getUserRewards(@RequestParam final String userName) {
+        LOGGER.debug("User rewards request with username : {}", userName);
 
-        if (userName == null || userName.length() == 0) {
+        if (userName.length() == 0) {
             throw new BadRequestException("username is required");
         }
+        List<UserRewardDTO> userRewards = tourGuideService.getUserRewards(userName);
 
-        return JsonStream.serialize(tourGuideService.getUserRewards(userName));
+        LOGGER.info("User rewards request - SUCCESS");
+        return userRewards;
     }
 
-    @GetMapping("/user/preferences")
-    public String getUserPreferences(@RequestParam String userName) {
+    /**
+     * Updates the user preferences.
+     *
+     * @param userPreferencesDTO the user preferences with updated data
+     * @return The user preferences converted to an UserPreferencesDTO object
+     */
+    @PutMapping("/user/preferences")
+    public String getUserPreferences(@Valid @RequestBody final UserPreferencesDTO userPreferencesDTO,
+                                                                 @RequestParam final String userName) {
+        LOGGER.debug("Update user preferences request with username : {}", userName);
 
-        if (userName == null || userName.length() == 0) {
+        if (userName.length() == 0) {
             throw new BadRequestException("username is required");
         }
+        UserPreferencesDTO userPreferences = tourGuideService.updateUserPreferences(userName, userPreferencesDTO);
 
-        return JsonStream.serialize(tourGuideService.getUserPreferences(userName));
+        LOGGER.info("User preferences request - SUCCESS");
+        return JsonStream.serialize(userPreferences);
     }
 }
