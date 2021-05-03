@@ -52,9 +52,9 @@ public class RewardsControllerTest {
     }
 
     @Test
-    @Tag("GetUserLocation")
-    @DisplayName("When getAttractionRewardPoints request, then return ok status")
-    public void whenGetUserLocationRequest_thenReturnOkStatus() throws Exception {
+    @Tag("GetAttractionRewardPoints")
+    @DisplayName("Given valid id, when getAttractionRewardPoints request, then return ok status")
+    public void givenValidId_whenGetAttractionRewardPoints_thenReturnOkStatus() throws Exception {
         when(rewardsService.getAttractionRewardPoints(attractionId, userId)).thenReturn(100);
 
         MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/rewards/points/" + attractionId
@@ -67,6 +67,36 @@ public class RewardsControllerTest {
 
         assertThat(content).contains("100");
         verify(rewardsService).getAttractionRewardPoints(attractionId, userId);
+    }
+
+    @Test
+    @Tag("GetAttractionRewardPoints")
+    @DisplayName("Given invalid id, when getAttractionRewardPoints request, then return BadRequest status")
+    public void givenInvalidUserId_whenGetAttractionRewardPointsRequest_thenReturnBadRequestStatus() throws Exception {
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/rewards/points/" + attractionId
+                + "/4b69b4d7")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        String content = result.getResponse().getContentAsString();
+
+        assertThat(content).contains("Invalid UUID string");
+    }
+
+    @Test
+    @Tag("GetAttractionRewardPoints")
+    @DisplayName("Given missing user id path variable, when getAttractionRewardPoints request, then return BadRequest status")
+    public void givenMissingUserIdPathVariable_whenGetAttractionRewardPointsRequest_thenReturnBadRequestStatus() throws Exception {
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/rewards/points/" + attractionId
+                + "/ ")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        String content = result.getResponse().getContentAsString();
+
+        assertThat(content).contains("userId parameter is missing");
     }
 }
 

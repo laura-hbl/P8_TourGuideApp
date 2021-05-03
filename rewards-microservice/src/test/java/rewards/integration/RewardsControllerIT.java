@@ -25,16 +25,33 @@ public class RewardsControllerIT {
     private int port;
 
     // URLS
-    private final static String REWARDS_POINTS_URL = "/rewards/points/39fcd2f0-bc11-4f2a-8b90-f9123f01ec74/" +
-            "4b69b4d7-a783-49b3-9819-fee155c3e18c";
+    private final static String REWARDS_POINTS_URL = "/rewards/points/";
 
     @Test
     @DisplayName("Given an userID and attractionID, when getRewardPoints request, then return OK status")
     public void givenAnUserIdAndAttractionId_whenGetRewardPointsRequest_thenReturnOkStatus() {
-        ResponseEntity<Integer> response = restTemplate.getForEntity("http://localhost:" + port +
-                REWARDS_POINTS_URL, Integer.class);
+        ResponseEntity<Integer> response = restTemplate.getForEntity("http://localhost:" + port + REWARDS_POINTS_URL
+                + "39fcd2f0-bc11-4f2a-8b90-f9123f01ec74/4b69b4d7-a783-49b3-9819-fee155c3e18c", Integer.class);
 
         assertNotNull(response);
         assertEquals("request status", HttpStatus.OK.value(), response.getStatusCodeValue());
+    }
+
+    @Test
+    @DisplayName("Given an invalid id, when getRewardPoints request, then return BadRequest status")
+    public void givenAnInvalidId_whenGetRewardPointsRequest_thenReturnBadRequestStatus() {
+        ResponseEntity<Integer> response = restTemplate.getForEntity("http://localhost:" + port + REWARDS_POINTS_URL
+                + "39fcd2f0-bc11-4f2a-8b90-f9123f01ec74/4b69b4d7", null);
+
+        assertEquals("request status", HttpStatus.BAD_REQUEST.value(), response.getStatusCodeValue());
+    }
+
+    @Test
+    @DisplayName("Given missing path variable, when getRewardPoints request, then return BadRequest status")
+    public void givenMissingPathVariable_whenGetRewardPointsRequest_thenReturnBadRequestStatus() {
+        ResponseEntity<Integer> response = restTemplate.getForEntity("http://localhost:" + port + REWARDS_POINTS_URL
+                + "39fcd2f0-bc11-4f2a-8b90-f9123f01ec74/ ", null);
+
+        assertEquals("request status", HttpStatus.BAD_REQUEST.value(), response.getStatusCodeValue());
     }
 }
