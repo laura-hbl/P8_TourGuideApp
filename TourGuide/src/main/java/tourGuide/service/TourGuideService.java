@@ -262,6 +262,7 @@ public class TourGuideService implements ITourGuideService {
      * @return The tracked location of the user
      */
     public VisitedLocationDTO trackUserLocation(final User user) {
+        LOGGER.debug("Inside TourGuideService.trackUserLocation for username : " + user.getUserName());
 
         VisitedLocationDTO visitedLocation = gpsProxy.getUserLocation(user.getUserId());
         user.addToVisitedLocations(modelConverter.toVisitedLocation(visitedLocation));

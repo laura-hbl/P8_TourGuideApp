@@ -1,5 +1,7 @@
 package rewards.service;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rewardCentral.RewardCentral;
@@ -13,6 +15,11 @@ import java.util.UUID;
  */
 @Service
 public class RewardsService implements IRewardsService {
+
+    /**
+     * RewardsService logger.
+     */
+    private static final Logger LOGGER = LogManager.getLogger(RewardsService.class);
 
     /**
      * RewardCentral instance.
@@ -39,6 +46,7 @@ public class RewardsService implements IRewardsService {
      * @return Reward points
      */
     public int getAttractionRewardPoints(final UUID attractionId, final UUID userId) {
+        LOGGER.debug("Inside RewardsService.getAttractionRewardPoints");
 
         int rewardPoints = rewardCentral.getAttractionRewardPoints(attractionId, userId);
 

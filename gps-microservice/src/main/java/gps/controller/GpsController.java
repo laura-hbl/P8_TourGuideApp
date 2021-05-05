@@ -4,6 +4,8 @@ import gps.dto.AttractionDTO;
 import gps.dto.VisitedLocationDTO;
 import gps.exception.ResourceNotFoundException;
 import gps.service.IGpsService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,6 +24,11 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/gps")
 public class GpsController {
+
+    /**
+     * GpsController logger.
+     */
+    private static final Logger LOGGER = LogManager.getLogger(GpsController.class);
 
     /**
      * IGpsService's implement class reference.
@@ -48,6 +55,7 @@ public class GpsController {
      */
     @GetMapping("/userLocation/{userId}")
     public VisitedLocationDTO getUserLocation(@PathVariable("userId") final UUID userId) {
+        LOGGER.debug("GET Request on /gps/userLocation/{userId} with id: {}", userId.toString());
 
         VisitedLocationDTO userLocation = gpsService.getUserLocation(userId);
 
@@ -55,6 +63,7 @@ public class GpsController {
             throw new ResourceNotFoundException("Failed to get user location");
         }
 
+        LOGGER.debug("GET Request on /gps/userLocation/{userId} - SUCCESS");
         return userLocation;
     }
 
@@ -66,6 +75,7 @@ public class GpsController {
      */
     @GetMapping("/attractions")
     public List<AttractionDTO> getAttractions() {
+        LOGGER.debug("GET Request on /gps/attractions");
 
         List<AttractionDTO> attractions = gpsService.getAttractions();
 
@@ -73,6 +83,7 @@ public class GpsController {
             throw new ResourceNotFoundException("Failed to get attraction list");
         }
 
+        LOGGER.debug("GET Request on /gps/attractions - SUCCESS");
         return attractions;
     }
 }

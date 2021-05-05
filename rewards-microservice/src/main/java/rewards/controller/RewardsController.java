@@ -1,5 +1,7 @@
 package rewards.controller;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +20,11 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/rewards")
 public class RewardsController {
+
+    /**
+     * RewardsController logger.
+     */
+    private static final Logger LOGGER = LogManager.getLogger(RewardsController.class);
 
     /**
      * IRewardsService's implement class reference.
@@ -44,8 +51,12 @@ public class RewardsController {
      */
     @GetMapping("/points/{attractionId}/{userId}")
     public int getRewardPoints(@PathVariable final UUID attractionId, @PathVariable final UUID userId) {
+        LOGGER.debug("GET Request on /rewards/points/{attractionId}/{userId} with userId: {}", userId.toString());
 
-        return rewardsService.getAttractionRewardPoints(attractionId, userId);
+        int rewardsPoints = rewardsService.getAttractionRewardPoints(attractionId, userId);
+
+        LOGGER.debug("GET Request on /rewards/points/{attractionId}/{userId} - SUCCESS");
+        return rewardsPoints;
     }
 }
 

@@ -61,7 +61,7 @@ public class TripDealsController {
     public List<ProviderDTO> getProviders(@PathVariable final String apiKey, @PathVariable final UUID userId,
                                           @PathVariable final int adults, @PathVariable final int children,
                                           @PathVariable final int nightsStay, @PathVariable final int rewardPoints) {
-        LOGGER.debug("Provider list request with user id: {}", userId.toString());
+        LOGGER.debug("GET provider list request with user id: {}", userId.toString());
 
         List<ProviderDTO> providers = tripDealsService.getProviders(apiKey, userId, adults, children,
                 nightsStay, rewardPoints);
@@ -70,7 +70,7 @@ public class TripDealsController {
             throw new ResourceNotFoundException("Failed to get provider list");
         }
 
-        LOGGER.info("Provider list request - SUCCESS");
+        LOGGER.debug("GET provider list request - SUCCESS");
         return providers;
     }
 }

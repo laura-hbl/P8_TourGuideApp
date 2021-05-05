@@ -85,6 +85,7 @@ public class RewardsService implements IRewardsService {
      * @param user The user whose rewards are being calculated
      */
     public void calculateRewards(final User user) {
+        LOGGER.debug("Inside RewardsService.calculateRewards");
 
         CopyOnWriteArrayList<VisitedLocation> visitedLocation = new CopyOnWriteArrayList<>();
         CopyOnWriteArrayList<AttractionDTO> attractions = new CopyOnWriteArrayList<>();
@@ -131,6 +132,7 @@ public class RewardsService implements IRewardsService {
      * @return True if distance is less than DEFAULT_PROXIMITY_BUFFER, false is distance is higher.
      */
     private boolean isNearAttraction(final VisitedLocation visitedLocation, final Location attractionLocation) {
+        LOGGER.debug("Inside RewardsService.isNearAttraction");
 
         return !(distanceCalculator.getDistanceInMiles(attractionLocation, visitedLocation.getLocation()) >
                 ProximityBuffer.DEFAULT_PROXIMITY_BUFFER);

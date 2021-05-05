@@ -61,14 +61,14 @@ public class TourGuideController {
      */
     @GetMapping("/user/location")
     public LocationDTO getUserLocation(@RequestParam String userName) {
-        LOGGER.debug("User location request with username : {}", userName);
+        LOGGER.debug("GET Request on /user/location with username : {}", userName);
 
         if (userName.length() == 0) {
             throw new BadRequestException("username is required");
         }
         LocationDTO userLocation = tourGuideService.getUserLocation(userName);
 
-        LOGGER.info("User location request - SUCCESS");
+        LOGGER.debug("GET Request on /user/location - SUCCESS");
         return userLocation;
     }
 
@@ -79,11 +79,11 @@ public class TourGuideController {
      */
     @GetMapping("/users/locations")
     public Map<String, LocationDTO> getUsersRecentLocation() {
-        LOGGER.debug("Users recent location request");
+        LOGGER.debug("GET Request on /users/locations");
 
         Map<String, LocationDTO> usersRecentLocation = tourGuideService.getAllUserRecentLocation();
 
-        LOGGER.info("Users recent location request - SUCCESS");
+        LOGGER.debug("GET Request on /users/locations - SUCCESS");
         return usersRecentLocation;
     }
 
@@ -96,14 +96,14 @@ public class TourGuideController {
      */
     @GetMapping("/user/nearByAttractions")
     public RecommendedAttractionDTO getUserRecommendedAttractions(@RequestParam final String userName) {
-        LOGGER.debug("User recommended attractions request with username : {}", userName);
+        LOGGER.debug("GET Request on /user/nearByAttractions with username : {}", userName);
 
         if (userName.length() == 0) {
             throw new BadRequestException("username is required");
         }
         RecommendedAttractionDTO nearByAttractions = tourGuideService.getUserRecommendedAttractions(userName);
 
-        LOGGER.info("User recommended attractions request - SUCCESS");
+        LOGGER.debug("GET Request on /user/nearByAttractions - SUCCESS");
         return nearByAttractions;
     }
 
@@ -115,14 +115,14 @@ public class TourGuideController {
      */
     @GetMapping("/user/tripPricer")
     public List<ProviderDTO> getUserTripDeals(@RequestParam final String userName) {
-        LOGGER.debug("User trip deals request with username : {}", userName);
+        LOGGER.debug("GET Request on /user/tripPricer with username : {}", userName);
 
         if (userName.length() == 0) {
             throw new BadRequestException("username is required");
         }
         List<ProviderDTO> userTripDeals = tourGuideService.getUserTripDeals(userName);
 
-        LOGGER.info("User trip deals request - SUCCESS");
+        LOGGER.debug("GET Request on /user/tripPricer - SUCCESS");
         return userTripDeals;
     }
 
@@ -134,14 +134,14 @@ public class TourGuideController {
      */
     @GetMapping("/user/rewards")
     public List<UserRewardDTO> getUserRewards(@RequestParam final String userName) {
-        LOGGER.debug("User rewards request with username : {}", userName);
+        LOGGER.debug("GET Request on /user/rewards with username : {}", userName);
 
         if (userName.length() == 0) {
             throw new BadRequestException("username is required");
         }
         List<UserRewardDTO> userRewards = tourGuideService.getUserRewards(userName);
 
-        LOGGER.info("User rewards request - SUCCESS");
+        LOGGER.debug("GET Request on /user/rewards - SUCCESS");
         return userRewards;
     }
 
@@ -154,14 +154,14 @@ public class TourGuideController {
     @PutMapping("/user/preferences")
     public String getUserPreferences(@Valid @RequestBody final UserPreferencesDTO userPreferencesDTO,
                                                                  @RequestParam final String userName) {
-        LOGGER.debug("Update user preferences request with username : {}", userName);
+        LOGGER.debug("GET Request on /user/preferences with username : {}", userName);
 
         if (userName.length() == 0) {
             throw new BadRequestException("username is required");
         }
         UserPreferencesDTO userPreferences = tourGuideService.updateUserPreferences(userName, userPreferencesDTO);
 
-        LOGGER.info("User preferences request - SUCCESS");
+        LOGGER.debug("GET Request on /user/preferences - SUCCESS");
         return JsonStream.serialize(userPreferences);
     }
 }

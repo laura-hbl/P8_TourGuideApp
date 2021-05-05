@@ -1,8 +1,8 @@
 package gps.service;
 
+import gps.controller.GpsController;
 import gps.dto.AttractionDTO;
 import gps.dto.VisitedLocationDTO;
-import gps.exception.ResourceNotFoundException;
 import gps.util.DTOConverter;
 import gpsUtil.GpsUtil;
 import gpsUtil.location.Attraction;
@@ -23,6 +23,11 @@ import java.util.UUID;
  */
 @Service
 public class GpsService implements IGpsService {
+
+    /**
+     * GpsService logger.
+     */
+    private static final Logger LOGGER = LogManager.getLogger(GpsService.class);
 
     /**
      * GpsUtil instance.
@@ -55,6 +60,7 @@ public class GpsService implements IGpsService {
      * @return The user visited location converted to a VisitedLocationDTO object
      */
     public VisitedLocationDTO getUserLocation(final UUID userId) {
+        LOGGER.debug("Inside GpsService.getUserLocation");
 
         VisitedLocation visitedLocation = gpsUtil.getUserLocation(userId);
 
@@ -68,6 +74,7 @@ public class GpsService implements IGpsService {
      * @return The attraction list
      */
     public List<AttractionDTO> getAttractions() {
+        LOGGER.debug("Inside GpsService.getAttractions");
 
         List<AttractionDTO> attractionList = new ArrayList<>();
         List<Attraction> attractions = gpsUtil.getAttractions();

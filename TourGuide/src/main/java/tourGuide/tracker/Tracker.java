@@ -88,17 +88,17 @@ public class Tracker extends Thread {
             }
 
             List<User> users = tourGuideService.getAllUsers();
-            LOGGER.debug("Begin Tracker. Tracking " + users.size() + " users.");
+            LOGGER.info("Begin Tracker. Tracking " + users.size() + " users.");
             stopWatch.start();
 
             tourGuideService.trackAllUserLocation(users);
 
             stopWatch.stop();
-            LOGGER.debug("Finished tracking users, tracker Time Elapsed: "
+            LOGGER.info("Finished tracking users, tracker Time Elapsed: "
                     + TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()) + " seconds.");
             stopWatch.reset();
             try {
-                LOGGER.debug("Tracker sleeping");
+                LOGGER.info("Tracker sleeping");
                 TimeUnit.SECONDS.sleep(trackingPollingInterval);
             } catch (InterruptedException e) {
                 break;
