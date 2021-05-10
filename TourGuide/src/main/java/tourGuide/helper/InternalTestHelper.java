@@ -66,7 +66,7 @@ public class InternalTestHelper {
 
             internalUserMap.put(userName, user);
         });
-        LOGGER.debug("Created " + internalUserNumber + " internal test users.");
+        LOGGER.info("Created " + internalUserNumber + " internal test users.");
     }
 
     /**

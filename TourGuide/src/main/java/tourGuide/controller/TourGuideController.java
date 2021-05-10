@@ -152,7 +152,7 @@ public class TourGuideController {
      * @return The user preferences converted to an UserPreferencesDTO object
      */
     @PutMapping("/user/preferences")
-    public String getUserPreferences(@Valid @RequestBody final UserPreferencesDTO userPreferencesDTO,
+    public UserPreferencesDTO getUserPreferences(@Valid @RequestBody final UserPreferencesDTO userPreferencesDTO,
                                                                  @RequestParam final String userName) {
         LOGGER.debug("GET Request on /user/preferences with username : {}", userName);
 
@@ -162,6 +162,6 @@ public class TourGuideController {
         UserPreferencesDTO userPreferences = tourGuideService.updateUserPreferences(userName, userPreferencesDTO);
 
         LOGGER.debug("GET Request on /user/preferences - SUCCESS");
-        return JsonStream.serialize(userPreferences);
+        return userPreferences;
     }
 }
