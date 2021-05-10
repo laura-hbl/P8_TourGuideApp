@@ -34,7 +34,7 @@ public class RewardsService implements IRewardsService {
     /**
      * Creates an Executor with fixed thread pool.
      */
-    private final ExecutorService executorService = Executors.newFixedThreadPool(1000);
+    private final ExecutorService executorService = Executors.newFixedThreadPool(900);
 
     /**
      * MicroserviceGpsProxy instance.
@@ -107,20 +107,17 @@ public class RewardsService implements IRewardsService {
     }
 
     /**
-     * Calculates all user rewards asynchronously.
+     * Calculates user reward asynchronously.
+     * Method only used to calculate the rewards of all users.
      *
-     * @param users The user list
+     * @param user The user
      */
-    public void calculateAllRewards(final List<User> users) {
-        LOGGER.debug("Inside RewardsService.calculateAllRewards");
+    public CompletableFuture<?> calculateRewardAsync(final User user) {
+        LOGGER.debug("Inside RewardsService.calculateRewardAsync");
 
-        for (User user : users) {
-            Runnable runnable = () -> {
-                calculateRewards(user);
-            };
-            executorService.execute(runnable);
-        }
-        shutdown();
+        return CompletableFuture.runAsync(() -> {
+            this.calculateRewards(user);
+        }, executorService);
     }
 
     /**
@@ -136,21 +133,5 @@ public class RewardsService implements IRewardsService {
 
         return !(distanceCalculator.getDistanceInMiles(attractionLocation, visitedLocation.getLocation()) >
                 ProximityBuffer.DEFAULT_PROXIMITY_BUFFER);
-    }
-
-    /**
-     * Shuts down executor service after timed out.
-     */
-    public void shutdown() {
-        LOGGER.debug("Inside RewardsService.shutdown");
-
-        executorService.shutdown();
-        try {
-            if (!executorService.awaitTermination(20, TimeUnit.MINUTES)) {
-                executorService.shutdownNow();
-            }
-        } catch (InterruptedException e) {
-            executorService.shutdownNow();
-        }
     }
 }

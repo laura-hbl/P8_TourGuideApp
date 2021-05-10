@@ -13,6 +13,7 @@ import tourGuide.exception.ResourceNotFoundException;
 import tourGuide.helper.InternalTestHelper;
 import tourGuide.model.Location;
 import tourGuide.model.Provider;
+import tourGuide.model.VisitedLocation;
 import tourGuide.model.user.User;
 import tourGuide.model.user.UserPreferences;
 import tourGuide.proxies.MicroServiceTripDealsProxy;
@@ -24,6 +25,7 @@ import tourGuide.util.DistanceCalculator;
 import tourGuide.util.ModelConverter;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -259,42 +261,27 @@ public class TourGuideService implements ITourGuideService {
      * history. Then, calculates user rewards by calling RewardsService's calculateRewards method.
      *
      * @param user The user to be located
-     * @return The tracked location of the user
+     * @return CompletableFuture of the tracked location of the user
      */
-    public VisitedLocationDTO trackUserLocation(final User user) {
-        LOGGER.debug("Inside TourGuideService.trackUserLocation for username : " + user.getUserName());
+    public CompletableFuture<?> trackUserLocation(User user) {
+        LOGGER.debug("Inside TourGuideService.trackUserLocation");
 
-        VisitedLocationDTO visitedLocation = gpsProxy.getUserLocation(user.getUserId());
-        user.addToVisitedLocations(modelConverter.toVisitedLocation(visitedLocation));
-
-        rewardsService.calculateRewards(user);
-
-        return visitedLocation;
-    }
-
-    /**
-     * Tracks all user location asynchronously.
-     *
-     * @param users The user list
-     */
-    public void trackAllUserLocation(List<User> users) {
-        LOGGER.debug("Inside TourGuideService.trackAllUserLocation");
-
-        for (User user : users) {
-            Runnable runnable = () -> {
-                trackUserLocation(user);
-            };
-            executorService.execute(runnable);
-        }
-        shutdown();
+        return CompletableFuture.supplyAsync(() -> {
+            VisitedLocationDTO visitedLocation = gpsProxy.getUserLocation(user.getUserId());
+            user.addToVisitedLocations(modelConverter.toVisitedLocation(visitedLocation));
+            CompletableFuture.runAsync(() -> {
+                rewardsService.calculateRewards(user);
+            });
+            return visitedLocation;
+        }, executorService);
     }
 
     /**
      * Calls TourGuideService's getUser method to retrieves the user with the given username, checks if user
      * has a least one visited location, if so converts the user last visited location to a dto object by
      * calling DTOConverter's toLocationDTO method. If not, gets the user location by calling GpsProxy's
-     * getUserLocation method and add it to the user's visited locations history. Then, converts the Location
-     * object to a dto object by calling DtoConverter's toLocationDTO method.
+     * getUserLocation method. Then, converts the Location object to a dto object by calling DtoConverter's
+     * toLocationDTO method.
      *
      * @param userName Username of the user
      * @return The location of the user
@@ -308,7 +295,7 @@ public class TourGuideService implements ITourGuideService {
             return dtoConverter.toLocationDTO(user.getLastVisitedLocation().getLocation());
         }
 
-        return dtoConverter.toLocationDTO(trackUserLocation(user).getLocation());
+        return dtoConverter.toLocationDTO(gpsProxy.getUserLocation(user.getUserId()).getLocation());
     }
 
     /**
@@ -390,22 +377,5 @@ public class TourGuideService implements ITourGuideService {
                 });
 
         return new RecommendedAttractionDTO(userLocation, nearByAttractions);
-    }
-
-    /**
-     * Shutdowns the ExecutorService and waits until all tasks complete their execution or the specified timeout
-     * is reached.
-     */
-    public void shutdown() {
-        LOGGER.debug("Inside TourGuideService.shutdown");
-
-        executorService.shutdown();
-        try {
-            if (!executorService.awaitTermination(20, TimeUnit.MINUTES)) {
-                executorService.shutdownNow();
-            }
-        } catch (InterruptedException e) {
-            executorService.shutdownNow();
-        }
     }
 }

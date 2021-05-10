@@ -5,6 +5,7 @@ import tourGuide.model.user.User;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * TourGuideService interface.
@@ -44,7 +45,6 @@ public interface ITourGuideService {
      */
     List<User> getAllUsers();
 
-
     /**
      * Retrieves the user rewards.
      *
@@ -57,16 +57,9 @@ public interface ITourGuideService {
      * Retrieves the user location.
      *
      * @param user The user to be located
-     * @return The tracked location of the user
+     * @return CompletableFuture of the tracked location of the user
      */
-    VisitedLocationDTO trackUserLocation(final User user);
-
-    /**
-     * Tracks all user location asynchronously.
-     *
-     * @param users The user list
-     */
-    void trackAllUserLocation(List<User> users);
+    CompletableFuture<?> trackUserLocation(final User user);
 
     /**
      * Retrieves the location of the user with the given username.
@@ -99,9 +92,4 @@ public interface ITourGuideService {
      * @return All user recent location map to their username
      */
     Map<String, LocationDTO> getAllUserRecentLocation();
-
-    /**
-     * Shuts down the executor service.
-     */
-    void shutdown() throws InterruptedException;
 }

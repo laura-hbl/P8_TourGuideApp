@@ -8,6 +8,7 @@ import tourGuide.service.ITourGuideService;
 import tourGuide.service.TourGuideService;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -91,7 +92,10 @@ public class Tracker extends Thread {
             LOGGER.info("Begin Tracker. Tracking " + users.size() + " users.");
             stopWatch.start();
 
-            tourGuideService.trackAllUserLocation(users);
+            CompletableFuture<?>[] futures = users.stream()
+                    .map(tourGuideService::trackUserLocation)
+                    .toArray(CompletableFuture[]::new);
+            CompletableFuture.allOf(futures).join();
 
             stopWatch.stop();
             LOGGER.info("Finished tracking users, tracker Time Elapsed: "
