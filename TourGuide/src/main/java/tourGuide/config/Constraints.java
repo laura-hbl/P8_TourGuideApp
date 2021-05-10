@@ -37,4 +37,9 @@ public class Constraints {
      * Minimum value allowed for the user's preference on the lowest price limit.
      */
     public static final int LOWER_PRICE_VALUE = 0;
+
+    /**
+     * Minimum value allowed for the radius of the area where attractions is considered as nearby one by the user.
+     */
+    public static final int LOWER_PROXIMITY = 0;
 }

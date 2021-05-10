@@ -19,7 +19,7 @@ public class UserPreferencesDTO {
     /**
      * The radius of the area where attractions is considered as nearby one by the user.
      */
-    @NumberFormat
+    @Min(value = Constraints.LOWER_PROXIMITY, message = "Please enter a valid number")
     private int attractionProximity;
 
     /**
