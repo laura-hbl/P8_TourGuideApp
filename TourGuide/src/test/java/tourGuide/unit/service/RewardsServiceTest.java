@@ -140,4 +140,31 @@ public class RewardsServiceTest {
         verify(rewardsProxy).getRewardPoints(any(UUID.class), any(UUID.class));
         verify(modelConverter).toAttraction(attractionDTO);
     }
+
+    @Test
+    @Tag("CalculateRewardAsync")
+    @DisplayName("If user has visited one attraction, when calculateRewardAsync, then rewards should be equal to one")
+    public void givenAnUserWithOneVisitedAttraction_whenCalculateRewardAsync_thenUserRewardIsEqualToOne() {
+        User user = new User();
+        user.setUserId(UUID.randomUUID());
+        Location location = new Location(-160.326003, -73.869629);
+        VisitedLocation visitedLocation = new VisitedLocation(UUID.randomUUID(), location, new Date());
+        user.addToVisitedLocations(visitedLocation);
+
+        Location attractionLocation = new Location(-117.922008, 33.817595);
+        AttractionDTO attractionDTO = new AttractionDTO(UUID.randomUUID(), "name",
+                "city", "state", attractionLocation);
+        Attraction attraction = new Attraction(UUID.randomUUID(), "name",
+                "city", "state", attractionLocation);
+        List<AttractionDTO> attractions = Arrays.asList(attractionDTO);
+
+        when(gpsProxy.getAttractions()).thenReturn(attractions);
+        when(distanceCalculator.getDistanceInMiles(any(Location.class), any(Location.class))).thenReturn(8.00);
+        when(rewardsProxy.getRewardPoints(any(UUID.class), any(UUID.class))).thenReturn(200);
+        when(modelConverter.toAttraction(attractionDTO)).thenReturn(attraction);
+
+        rewardsService.calculateRewardAsync(user).join();
+
+        assertThat(user.getUserRewards().size()).isEqualTo(1);
+    }
 }

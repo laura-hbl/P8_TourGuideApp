@@ -19,9 +19,9 @@ import tourGuide.service.TourGuideService;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
@@ -50,21 +50,22 @@ public class PerformanceIT {
     @DisplayName("Given a high volume users, when trackAllUserLocation, then elapsed time should be less or equal " +
             "than expected time")
     public void givenAHighVolumeUsers_whenTrackAllUserLocation_thenElapsedTimeShouldBeLessOrEqualThanExpectedTime() {
-        List<User> allUsers = tourGuideService.getAllUsers();
-        allUsers.forEach(u -> u.clearVisitedLocations());
+        List<User> users = tourGuideService.getAllUsers();
+        users.forEach(u -> u.clearVisitedLocations());
 
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
 
-        System.out.println("Tracking location start at : " + LocalDateTime.now());
-
-        tourGuideService.trackAllUserLocation(allUsers);
+        CompletableFuture<?>[] futures = users.stream()
+                .map(tourGuideService::trackUserLocation)
+                .toArray(CompletableFuture[]::new);
+        CompletableFuture.allOf(futures).join();
 
         stopWatch.stop();
 
         System.out.println("highVolumeTrackLocation: Time Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()) + " seconds.");
         assertTrue(TimeUnit.MINUTES.toSeconds(15) >= TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()));
-        allUsers.forEach(u -> assertTrue(u.getVisitedLocations().size() == 1));
+        users.forEach(u -> assertTrue(u.getVisitedLocations().size() == 1));
     }
 
     @Test
@@ -73,9 +74,9 @@ public class PerformanceIT {
             "elapsed time should be less or equal than expected time")
     public void givenHighVolumeUsers_whenCalculateAllRewards_thenElapsedTimeShouldBeLessOrEqualThanExpectedTime() {
         AttractionDTO attraction = gpsProxy.getAttractions().get(0);
-        List<User> allUsers = tourGuideService.getAllUsers();
+        List<User> users = tourGuideService.getAllUsers();
 
-        allUsers.forEach(u -> {
+        users.forEach(u -> {
             u.clearVisitedLocations();
             u.getUserRewards().clear();
             u.addToVisitedLocations(new VisitedLocation(u.getUserId(), attraction.getLocation(), new Date()));
@@ -83,14 +84,16 @@ public class PerformanceIT {
 
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
-        System.out.println("Tracking rewards start at : " + LocalDateTime.now());
 
-        rewardsService.calculateAllRewards(allUsers);
+        CompletableFuture<?>[] futures = users.stream()
+                .map(rewardsService::calculateRewardAsync)
+                .toArray(CompletableFuture[]::new);
+        CompletableFuture.allOf(futures).join();
 
         stopWatch.stop();
 
         System.out.println("highVolumeGetRewards: Time Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()) + " seconds.");
         assertTrue(TimeUnit.MINUTES.toSeconds(20) >= TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()));
-        allUsers.forEach(u -> assertTrue(u.getUserRewards().size() == 1));
+        users.forEach(u -> assertTrue(u.getUserRewards().size() == 1));
     }
 }

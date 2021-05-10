@@ -100,6 +100,18 @@ public class TourGuideServiceIT {
     }
 
     @Test
+    @Tag("TrackUserLocation")
+    @DisplayName("Given an user, when trackUserLocation, then the user location should be added to history")
+    public void givenAnUser_whenTrackUserLocation_thenUserLocationShouldBeAddedToHistory() {
+        UUID userID = UUID.fromString("4b69b4d7-a783-49b3-9819-fee155c3e18c");
+        User user = new User(userID, "internalUser1", "000", "user@gmail.com");
+
+        tourGuideService.trackUserLocation(user).join();
+
+        assertThat(user.getVisitedLocations().size()).isEqualTo(1);
+    }
+
+    @Test
     @Tag("GetUserRewards")
     @DisplayName("If user has a reward, when getUserRewards, then return user reward")
     public void givenAnUserWithAReward_whenGetUserRewards_thenReturnUserReward() {

@@ -107,21 +107,15 @@ public class RewardsServiceIT {
     }
 
     @Test
-    @Tag("CalculateRewards")
-    @DisplayName("If user has no visited location near an attraction, when calculateReward, then rewards should " +
-            "be equal to zero")
-    public void given_whenCalculateRewards_thenUserRewardIsEqualToZero() {
-        AttractionDTO attraction = gpsProxy.getAttractions().get(0);
-        List<User> allUsers = tourGuideService.getAllUsers();
+    @Tag("CalculateRewardAsync")
+    @DisplayName("If user has visited one attraction, when calculateRewardAsync, then rewards should be equal to one")
+    public void givenAnUserWithOneVisitedAttraction_whenCalculateRewardAsync_thenUserRewardIsEqualToOne() {
+        User user = new User(UUID.randomUUID(), "laura", "000", "laura@gmail.com");
+        AttractionDTO attraction1 = gpsProxy.getAttractions().get(0);
+        user.addToVisitedLocations(new VisitedLocation(user.getUserId(), attraction1.getLocation(), new Date()));
 
-        allUsers.forEach(u -> {
-            u.clearVisitedLocations();
-            u.getUserRewards().clear();
-            u.addToVisitedLocations(new VisitedLocation(u.getUserId(), attraction.getLocation(), new Date()));
-        });
+        rewardsService.calculateRewardAsync(user).join();
 
-        rewardsService.calculateAllRewards(allUsers);
-
-        allUsers.forEach(u -> assertTrue(u.getUserRewards().size() == 1));
+        assertThat(user.getUserRewards().size()).isEqualTo(1);
     }
 }

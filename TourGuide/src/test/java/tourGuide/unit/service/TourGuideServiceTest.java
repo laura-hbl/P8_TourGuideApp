@@ -31,6 +31,7 @@ import tourGuide.util.DistanceCalculator;
 import tourGuide.util.ModelConverter;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
@@ -217,14 +218,13 @@ public class TourGuideServiceTest {
 
     @Test
     @Tag("TrackUserLocation")
-    @DisplayName("Given an user, when trackUserLocation, then return expected visited location")
-    public void givenAnUser_whenTrackUserLocation_thenReturnExpectedUserLocation() {
+    @DisplayName("Given an user, when trackUserLocation, then expected visited location should be added to history")
+    public void givenAnUser_whenTrackUserLocation_thenExpectedUserLocationShouldBeAddedToHistory() {
         when(gpsProxy.getUserLocation(any(UUID.class))).thenReturn(visitedLocationDTO);
         when(modelConverter.toVisitedLocation(any(VisitedLocationDTO.class))).thenReturn(visitedLocation);
 
-        VisitedLocationDTO result = tourGuideService.trackUserLocation(user1);
+        tourGuideService.trackUserLocation(user1).join();
 
-        assertThat(result).isEqualTo(visitedLocationDTO);
         assertThat(user1.getVisitedLocations().get(0)).isEqualTo(visitedLocation);
     }
 
@@ -235,12 +235,10 @@ public class TourGuideServiceTest {
         LocationDTO expectedLocation = new LocationDTO(-160.326003, -73.869629);
         when(internalTestHelper.getInternalUserMap()).thenReturn(internalUser);
         when(gpsProxy.getUserLocation(any(UUID.class))).thenReturn(visitedLocationDTO);
-        when(modelConverter.toVisitedLocation(any(VisitedLocationDTO.class))).thenReturn(visitedLocation);
         when(dtoConverter.toLocationDTO(any(Location.class))).thenReturn(expectedLocation);
         LocationDTO result = tourGuideService.getUserLocation(user1.getUserName());
 
         assertThat(result).isEqualToComparingFieldByField(expectedLocation);
-        assertThat(user1.getVisitedLocations().size()).isEqualTo(1);
     }
 
     @Test
