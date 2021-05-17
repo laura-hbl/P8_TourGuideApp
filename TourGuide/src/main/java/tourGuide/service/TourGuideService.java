@@ -263,7 +263,7 @@ public class TourGuideService implements ITourGuideService {
      * @param user The user to be located
      * @return CompletableFuture of the tracked location of the user
      */
-    public CompletableFuture<?> trackUserLocation(User user) {
+    public CompletableFuture<?> trackUserLocation(final User user) {
         LOGGER.debug("Inside TourGuideService.trackUserLocation");
 
         return CompletableFuture.supplyAsync(() -> {

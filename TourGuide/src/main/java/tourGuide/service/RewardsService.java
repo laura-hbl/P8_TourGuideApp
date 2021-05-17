@@ -15,8 +15,10 @@ import tourGuide.proxies.MicroserviceRewardsProxy;
 import tourGuide.util.DistanceCalculator;
 import tourGuide.util.ModelConverter;
 
-import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Contains methods that deals with rewards business logic.
@@ -87,20 +89,20 @@ public class RewardsService implements IRewardsService {
     public void calculateRewards(final User user) {
         LOGGER.debug("Inside RewardsService.calculateRewards");
 
-        CopyOnWriteArrayList<VisitedLocation> visitedLocation = new CopyOnWriteArrayList<>();
+        CopyOnWriteArrayList<VisitedLocation> userLocations = new CopyOnWriteArrayList<>();
         CopyOnWriteArrayList<AttractionDTO> attractions = new CopyOnWriteArrayList<>();
 
-        visitedLocation.addAll(user.getVisitedLocations());
+        userLocations.addAll(user.getVisitedLocations());
         attractions.addAll(gpsProxy.getAttractions());
 
-        visitedLocation.forEach(v -> {
+        userLocations.forEach(visitedLocation -> {
             attractions.stream()
-                    .filter(a -> isNearAttraction(v, a.getLocation()))
-                    .forEach(a -> {
+                    .filter(attraction -> isNearAttraction(visitedLocation, attraction.getLocation()))
+                    .forEach(attraction -> {
                         if (user.getUserRewards().stream()
-                                .noneMatch(r -> r.attraction.getAttractionName().equals(a.getAttractionName()))) {
-                            int rewardsPoint = rewardsProxy.getRewardPoints(a.getAttractionId(), user.getUserId());
-                            user.addUserReward(new UserReward(v, modelConverter.toAttraction(a), rewardsPoint));
+                                .noneMatch(r -> r.attraction.getAttractionName().equals(attraction.getAttractionName()))) {
+                            user.addUserReward(new UserReward(visitedLocation, modelConverter.toAttraction(attraction),
+                                    rewardsProxy.getRewardPoints(attraction.getAttractionId(), user.getUserId())));
                         }
                     });
         });
